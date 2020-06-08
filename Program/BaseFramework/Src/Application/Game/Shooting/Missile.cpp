@@ -2,14 +2,7 @@
 
 #include"Application//main.h"
 
-Missile::Missile()
-{
 
-}
-Missile::~Missile()
-{
-	Release();
-}
 
 void Missile::Deserialize()
 {
@@ -41,29 +34,4 @@ void Missile::Update()
 	m_mWorld._41 += move.x;
 	m_mWorld._42 += move.y;
 	m_mWorld._43 += move.z;
-}
-
-void Missile::Draw()
-{
-	if (m_alive == false) { return; }
-
-	if (m_pModel)
-	{
-		SHADER.m_standardShader.SetWorldMatrix(m_mWorld);
-		SHADER.m_standardShader.DrawMesh(m_pModel->GetMesh(), m_pModel->GetMaterials());
-	}
-}
-
-void Missile::Move(const KdVec3& v)
-{
-		
-}
-
-void Missile::Release()
-{
-	if (m_pModel)
-	{
-		delete m_pModel;
-		m_pModel = nullptr;
-	}
 }

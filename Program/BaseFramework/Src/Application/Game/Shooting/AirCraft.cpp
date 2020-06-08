@@ -2,15 +2,6 @@
 #include"Missile.h"
 #include "../Scene.h"
 
-AirCraft::AirCraft()
-{
-
-}
-AirCraft::~AirCraft()
-{
-	Release();
-}
-
 void AirCraft::Deserialize()
 {
 	m_pModel = new kdModel();
@@ -40,14 +31,6 @@ void AirCraft::Update()
 
 }
 
-void AirCraft::Draw()
-{
-	if (m_pModel == nullptr) { return; }
-
-	SHADER.m_standardShader.SetWorldMatrix(m_mWorld);
-	SHADER.m_standardShader.DrawMesh(m_pModel->GetMesh(), m_pModel->GetMaterials());
-
-}
 
 void AirCraft::ImGuiUpdate()
 {
@@ -149,7 +132,7 @@ void AirCraft::UpdateShoot()
 				pMissile->Deserialize();
 				pMissile->SetMatrix(m_mWorld);
 
-				Scene::Getinstance().AddMissile(pMissile);
+				Scene::Getinstance().AddObject(pMissile);
 			}
 			mcanShoot = false;
 		}
@@ -157,14 +140,5 @@ void AirCraft::UpdateShoot()
 	else
 	{
 		mcanShoot = true;
-	}
-}
-
-void AirCraft::Release()
-{
-	if (m_pModel)
-	{
-		delete m_pModel;
-		m_pModel = nullptr;
 	}
 }

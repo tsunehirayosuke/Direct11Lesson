@@ -1,7 +1,7 @@
 ﻿#include "Scene.h"
+#include "GameObject.h"
 
 #include"Shooting/StageObject.h"
-#include"EditorCamera.h"
 #include"Shooting/AirCraft.h"
 #include"Shooting/Missile.h"
 //コンストラクタ
@@ -23,73 +23,53 @@ void Scene::Init()
 
 	m_sky.Load("Data/Sky/Sky.gltf");
 
-	m_pGround = new StageObject();
-	if (m_pGround)
+	StageObject* pGround = new StageObject();
+	if (pGround)
 	{
-		m_pGround->Deserialize();
+		pGround->Deserialize();
+		m_objects.push_back(pGround);
 	}
 
-	m_pAircraft = new AirCraft();
-	if (m_pAircraft)
+	AirCraft* pAircraft = new AirCraft();
+	if (pAircraft)
 	{
-		m_pAircraft->Deserialize();
+		pAircraft->Deserialize();
+		m_objects.push_back(pAircraft);
 	}
 }
 
 //解放
 void::Scene::Release()
 {
-	if (m_pCamera)
+	for (auto pObject : m_objects)
 	{
-		delete m_pCamera;
-		m_pCamera = nullptr;
+		delete pObject;
 	}
-
-	if (m_pGround)
-	{
-		delete m_pGround;
-		m_pGround = nullptr;
-	}
-
-	if (m_pAircraft)
-	{
-		delete m_pAircraft;
-		m_pAircraft = nullptr;
-	}
-	for (auto pMissile : m_missiles)
-	{
-		delete pMissile;
-
-	}
-	m_missiles.clear();
+	m_objects.clear();
 }
 
 //更新
 void Scene::Update()
 {
-	if (m_pAircraft)
-	{
-		m_pAircraft->Update();
-	}
 	if (m_editorCameraEnable)
 	{
 		m_pCamera->Update();
 	}
-	for (auto pMissile : m_missiles)
+	for (auto pObject : m_objects)
 	{
-		pMissile->Update();
+		pObject->Update();
 	}
-	for (auto missileItr = m_missiles.begin(); missileItr != m_missiles.end();)
+	for (auto pObjectItr = m_objects.begin(); pObjectItr != m_objects.end();)
 	{
 		//寿命が尽きていたらリストから除外
-		if ((*missileItr)->IsAlive() == false)
+		if ((*pObjectItr)->IsAlive() == false)
 		{
-			delete (*missileItr);
-			missileItr = m_missiles.erase(missileItr);
+			delete (*pObjectItr);
+			pObjectItr = m_objects.erase(pObjectItr);
 		}
 		else
 		{
-			++missileItr;
+			++pObjectItr;
 		}
 	}
 }
@@ -104,10 +84,7 @@ void Scene::Draw()
 	}
 	else
 	{
-		if (m_pAircraft)
-		{
-			m_pAircraft->SetCameraToShader();
-		}
+		
 	}
 
 	
@@ -132,18 +109,10 @@ void Scene::Draw()
 	//不透明物描画
 	SHADER.m_standardShader.SetToDevice();
 
-	if (m_pGround)
+	
+	for (auto pObject : m_objects)
 	{
-		m_pGround->Draw();
-	}
-
-	if (m_pAircraft)
-	{
-		m_pAircraft->Draw();
-	}
-	for (auto pMissile : m_missiles)
-	{
-		pMissile->Draw();
+		pObject->Draw();
 	}
 
 	//デバッグライン描画
@@ -170,10 +139,10 @@ void Scene::Draw()
 	}
 }
 
-void Scene::AddMissile(Missile* pMissile)
+void Scene::AddObject(GameObject* pObject)
 {
-	if (pMissile == nullptr) { return; }
-	m_missiles.push_back(pMissile);
+	if (pObject == nullptr) { return; }
+	m_objects.push_back(pObject);
 }
 
 void Scene::ImGuiUpdate()
@@ -181,11 +150,6 @@ void Scene::ImGuiUpdate()
 	if (ImGui::Begin("Scene"))
 	{
 		ImGui::Checkbox("EditorCamera", &m_editorCameraEnable);
-
-		if (m_pAircraft)
-		{
-			m_pAircraft->ImGuiUpdate();
-		}
 
 	}
 		ImGui::End();

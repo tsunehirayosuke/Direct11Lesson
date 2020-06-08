@@ -1,11 +1,10 @@
 ﻿#pragma once
 
 
+#include"EditorCamera.h"
+
 //前方宣言
-class StageObject;
-class EditorCamera;
-class AirCraft;
-class Missile;
+class GameObject;
 
 class Scene
 {
@@ -23,7 +22,7 @@ public:
 	void Update();	//更新
 	void Draw();	//描画
 
-	void AddMissile(Missile* pMissile);
+	void AddObject(GameObject* pObject);
 
 	void ImGuiUpdate();//ImGuiの更新
 
@@ -41,11 +40,9 @@ private:
 
 	kdModel			m_sky;					//スカイスフィア
 	EditorCamera*	m_pCamera;
-	StageObject*	m_pGround = nullptr;	//ステージの地面
-	AirCraft*		m_pAircraft = nullptr;//飛行機
 	bool			m_editorCameraEnable = true;
 
-	std::list<Missile*> m_missiles;
+	std::list<GameObject*> m_objects;
 
 	//デバッグライン描画用の頂点配列」
 	std::vector<KdEffectShader::Vertex> m_debugLines;
