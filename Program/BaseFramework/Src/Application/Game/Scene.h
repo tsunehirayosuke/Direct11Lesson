@@ -18,11 +18,12 @@ public:
 	~Scene();		//デストラクタ
 
 	void Init();	//初期化
+	void Deserialize();
 	void Release();	//解放
 	void Update();	//更新
 	void Draw();	//描画
 
-	void AddObject(GameObject* pObject);
+	void AddObject(std::shared_ptr<GameObject> spObject);
 
 	void ImGuiUpdate();//ImGuiの更新
 
@@ -38,11 +39,11 @@ private:
 
 	Scene();        //コンストラクタ
 
-	kdModel			m_sky;					//スカイスフィア
+	std::shared_ptr<kdModel> m_spsky = nullptr;	//スカイスフィア
 	EditorCamera*	m_pCamera;
 	bool			m_editorCameraEnable = true;
 
-	std::list<GameObject*> m_objects;
+	std::list<std::shared_ptr<GameObject>> m_objects;
 
 	//デバッグライン描画用の頂点配列」
 	std::vector<KdEffectShader::Vertex> m_debugLines;

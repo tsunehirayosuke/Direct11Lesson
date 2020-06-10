@@ -10,10 +10,9 @@ kdModel::kdModel()
 //デストラクタ
 kdModel::~kdModel()
 {
-	if (m_pMesh)
+	if (m_spMesh)
 	{
-		delete m_pMesh;
-		m_pMesh = nullptr;
+		m_spMesh.reset();
 	}
 }
 
@@ -35,11 +34,11 @@ bool kdModel::Load(const std::string& filename)
 		const KdGLTFNode& rNode = spModel->Nodes[i];
 		if (rNode.IsMesh)
 		{
-			m_pMesh = new KdMesh;
-			if (m_pMesh)
+			m_spMesh = std::make_shared<KdMesh>();
+			if (m_spMesh)
 			{
 				//頂点情報配列　面情報配列　サブセット情報配列
-				m_pMesh->Create(rNode.Mesh.Vertices, rNode.Mesh.Faces, rNode.Mesh.Subsets);
+				m_spMesh->Create(rNode.Mesh.Vertices, rNode.Mesh.Faces, rNode.Mesh.Subsets);
 				break;
 			}
 		}

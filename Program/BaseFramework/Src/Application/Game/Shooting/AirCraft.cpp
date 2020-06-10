@@ -4,13 +4,12 @@
 
 void AirCraft::Deserialize()
 {
-	m_pModel = new kdModel();
-	if (m_pModel == nullptr) { return; }
+	m_spModel = std::make_shared<kdModel>();
+	if (m_spModel == nullptr) { return; }
 
-	if (m_pModel->Load("Data/Aircraft/Aircraft_body.gltf") == false)
+	if (m_spModel->Load("Data/Aircraft/Aircraft_body.gltf") == false)
 	{
-		delete m_pModel;
-		m_pModel = nullptr;
+		m_spModel.reset();
 	}
 
 	//初期配列座標を地面から少し浮いた位置にする
@@ -125,14 +124,14 @@ void AirCraft::UpdateShoot()
 	{
 		if (mcanShoot)
 		{
-			Missile* pMissile = new Missile;
-			if (pMissile)
+			std::shared_ptr<Missile> spMissile = std::make_shared<Missile>();
+			if (spMissile)
 			{
 
-				pMissile->Deserialize();
-				pMissile->SetMatrix(m_mWorld);
+				spMissile->Deserialize();
+				spMissile->SetMatrix(m_mWorld);
 
-				Scene::Getinstance().AddObject(pMissile);
+				Scene::Getinstance().AddObject(spMissile);
 			}
 			mcanShoot = false;
 		}

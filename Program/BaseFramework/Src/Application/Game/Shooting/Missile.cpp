@@ -6,10 +6,10 @@
 
 void Missile::Deserialize()
 {
-	m_pModel = new kdModel;
-	if (m_pModel == nullptr) { return; }
+	m_spModel = std::make_shared<kdModel>();
+	if (m_spModel == nullptr) { return; }
 	
-	if (m_pModel->Load("Data/Missile/Missile.gltf") == false)
+	if (m_spModel->Load("Data/Missile/Missile.gltf") == false)
 	{
 		Release();
 	}

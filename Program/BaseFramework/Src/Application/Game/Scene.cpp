@@ -21,30 +21,35 @@ void Scene::Init()
 {
 	m_pCamera = new EditorCamera();
 
-	m_sky.Load("Data/Sky/Sky.gltf");
-
-	StageObject* pGround = new StageObject();
-	if (pGround)
+	m_spsky = std::make_shared<kdModel>();
+	if (m_spsky->Load("Data/Sky/Sky.gltf") == false)
 	{
-		pGround->Deserialize();
-		m_objects.push_back(pGround);
+		m_spsky.reset();
+	}
+	Deserialize();
+	
+}
+
+void Scene::Deserialize()
+{
+	std::shared_ptr<StageObject> spGround = std::make_shared<StageObject>();
+	if (spGround)
+	{
+		spGround->Deserialize();
+		m_objects.push_back(spGround);
 	}
 
-	AirCraft* pAircraft = new AirCraft();
-	if (pAircraft)
+	std::shared_ptr<AirCraft> spAircraft = std::make_shared<AirCraft>();
+	if (spAircraft)
 	{
-		pAircraft->Deserialize();
-		m_objects.push_back(pAircraft);
+		spAircraft->Deserialize();
+		m_objects.push_back(spAircraft);
 	}
 }
 
 //解放
 void::Scene::Release()
 {
-	for (auto pObject : m_objects)
-	{
-		delete pObject;
-	}
 	m_objects.clear();
 }
 
@@ -59,17 +64,16 @@ void Scene::Update()
 	{
 		pObject->Update();
 	}
-	for (auto pObjectItr = m_objects.begin(); pObjectItr != m_objects.end();)
+	for (auto spObjectItr = m_objects.begin(); spObjectItr != m_objects.end();)
 	{
 		//寿命が尽きていたらリストから除外
-		if ((*pObjectItr)->IsAlive() == false)
+		if ((*spObjectItr)->IsAlive() == false)
 		{
-			delete (*pObjectItr);
-			pObjectItr = m_objects.erase(pObjectItr);
+			spObjectItr = m_objects.erase(spObjectItr);
 		}
 		else
 		{
-			++pObjectItr;
+			++spObjectItr;
 		}
 	}
 }
@@ -104,7 +108,10 @@ void Scene::Draw()
 	SHADER.m_effectShader.SetWorldMatrix(skyScale);
 
 	//モデルの描画(メッシュ情報とマテリアル情報を渡す)
-	SHADER.m_effectShader.DrawMesh(m_sky.GetMesh(), m_sky.GetMaterials());
+	if (m_spsky)
+	{
+		SHADER.m_effectShader.DrawMesh(m_spsky->GetMesh().get(), m_spsky->GetMaterials());
+	}
 
 	//不透明物描画
 	SHADER.m_standardShader.SetToDevice();
@@ -139,10 +146,10 @@ void Scene::Draw()
 	}
 }
 
-void Scene::AddObject(GameObject* pObject)
+void Scene::AddObject(std::shared_ptr<GameObject> spObject)
 {
-	if (pObject == nullptr) { return; }
-	m_objects.push_back(pObject);
+	if (spObject == nullptr) { return; }
+	m_objects.push_back(spObject);
 }
 
 void Scene::ImGuiUpdate()
