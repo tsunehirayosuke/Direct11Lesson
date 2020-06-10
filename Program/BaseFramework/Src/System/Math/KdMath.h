@@ -116,10 +116,22 @@ public:
 		*this = DirectX::XMMatrixRotationX(angle);
 	}
 
+	//透視影行列の作成
+	KdMatrix& CreateProjectionPerspectiveFov(float fovAngleY, float aspectRatio, float nearZ, float farZ)
+	{
+		*this = DirectX::XMMatrixPerspectiveFovLH(fovAngleY, aspectRatio, aspectRatio, farZ);
+		return *this;
+	}
+
 	//操作==================================================================
 	void RotateZ(float angle)
 	{
 		*this *= DirectX::XMMatrixRotationZ(angle);
+	}
+
+	void Inverse()
+	{
+		*this = DirectX::XMMatrixInverse(nullptr, *this);
 	}
 
 	//プロパティ============================================================
@@ -144,10 +156,6 @@ public:
 		_43 = v.z;
 	}
 
-	void Inverse()
-	{
-		*this = DirectX::XMMatrixInverse(nullptr, *this);
-	}
 };
 
 inline KdMatrix operator*(const KdMatrix& M1, const KdMatrix& M2)

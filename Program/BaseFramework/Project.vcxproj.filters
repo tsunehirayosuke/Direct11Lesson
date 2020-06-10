@@ -49,6 +49,9 @@
     <Filter Include="Library\Imgui">
       <UniqueIdentifier>{f048735e-bd17-4f04-aec3-4b7a94c7641d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Src\Application\Component">
+      <UniqueIdentifier>{70c82a6a-438c-4f7f-8d8c-2dd8f26948a5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Pch.h">
@@ -165,6 +168,9 @@
     <ClInclude Include="Src\System\Utility\KdResourceFactory.h">
       <Filter>Src\System\Utility</Filter>
     </ClInclude>
+    <ClInclude Include="Src\Application\Component\CameraComponent.h">
+      <Filter>Src\Application\Component</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Pch.cpp">
@@ -250,6 +256,9 @@
     </ClCompile>
     <ClCompile Include="Src\System\Utility\KdResourceFactory.cpp">
       <Filter>Src\System\Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Application\Component\CameraComponent.cpp">
+      <Filter>Src\Application\Component</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -61,7 +61,7 @@ void::EditorCamera::Update()
 	if (APP.m_window.GetMouseWheelVal())
 	{
 		Math::Matrix mDistance;
-		mDistance = DirectX::XMMatrixTranslation(0.0f, 0.0f, (float)APP.m_window.GetMouseWheelVal() * 0.01);
+		mDistance = DirectX::XMMatrixTranslation(0.0f, 0.0f, (float)APP.m_window.GetMouseWheelVal() * 0.01f);
 
 		m_mCam = mDistance * m_mCam;
 	}
