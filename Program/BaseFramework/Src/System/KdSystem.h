@@ -32,4 +32,5 @@
 // ウィンドウ
 #include "Window/KdWindow.h"
 
-
+//リソース管理
+#include"Utility/KdResourceFactory.h"

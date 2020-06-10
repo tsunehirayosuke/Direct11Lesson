@@ -21,13 +21,8 @@ void Scene::Init()
 {
 	m_pCamera = new EditorCamera();
 
-	m_spsky = std::make_shared<kdModel>();
-	if (m_spsky->Load("Data/Sky/Sky.gltf") == false)
-	{
-		m_spsky.reset();
-	}
+	m_spsky = KdResourceFactory::GetInstance().GetModel("Data/Sky/Sky.gltf");
 	Deserialize();
-	
 }
 
 void Scene::Deserialize()
