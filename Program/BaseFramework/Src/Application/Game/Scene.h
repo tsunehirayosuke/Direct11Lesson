@@ -5,6 +5,7 @@
 
 //前方宣言
 class GameObject;
+class CameraComponent;
 
 class Scene
 {
@@ -25,6 +26,8 @@ public:
 
 	void AddObject(std::shared_ptr<GameObject> spObject);
 
+	inline void SetTargetCamera(std::shared_ptr<CameraComponent> spCamera) { m_wpTargetCamera = spCamera; }
+
 	void ImGuiUpdate();//ImGuiの更新
 
 	//デバッグライン描画
@@ -44,6 +47,9 @@ private:
 	bool			m_editorCameraEnable = true;
 
 	std::list<std::shared_ptr<GameObject>> m_objects;
+
+	//ターゲットのカメラ
+	std::weak_ptr<CameraComponent>m_wpTargetCamera;
 
 	//デバッグライン描画用の頂点配列」
 	std::vector<KdEffectShader::Vertex> m_debugLines;

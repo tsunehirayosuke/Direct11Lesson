@@ -1,5 +1,6 @@
 ﻿#include "Scene.h"
 #include "GameObject.h"
+#include "../Component/CameraComponent.h"
 
 #include"Shooting/StageObject.h"
 #include"Shooting/AirCraft.h"
@@ -37,6 +38,7 @@ void Scene::Deserialize()
 	std::shared_ptr<AirCraft> spAircraft = std::make_shared<AirCraft>();
 	if (spAircraft)
 	{
+		spAircraft->SetTag(OBJECT_TAG::TAG_Player);
 		spAircraft->Deserialize();
 		m_objects.push_back(spAircraft);
 	}
@@ -83,7 +85,11 @@ void Scene::Draw()
 	}
 	else
 	{
-		
+		std::shared_ptr<CameraComponent> spCamera = m_wpTargetCamera.lock();
+		if (spCamera)
+		{
+			spCamera->SetToShader();
+		}
 	}
 
 	

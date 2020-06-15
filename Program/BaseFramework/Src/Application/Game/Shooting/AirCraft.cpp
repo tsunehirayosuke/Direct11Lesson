@@ -1,6 +1,7 @@
 ﻿#include"AirCraft.h"
 #include"Missile.h"
 #include "../Scene.h"
+#include "../../Component/CameraComponent.h"
 
 void AirCraft::Deserialize()
 {
@@ -10,11 +11,15 @@ void AirCraft::Deserialize()
 	//初期配列座標を地面から少し浮いた位置にする
 	m_mWorld.CreateTranslation(0.0f, 5.0f, 0.0f);
 
-	m_mOffset = Math::Matrix::CreateRotationX(DirectX::XMConvertToRadians(15));
-	m_mOffset *= Math::Matrix::CreateTranslation(0.0f, 2.0f, -10.0f);
+	if (m_spCameraComponent)
+	{
+		m_spCameraComponent->OffsetMatrix().CreateTranslation(0.0f, 1.5f, -10.0f);
+	}
 
-	m_mProj = DirectX::XMMatrixPerspectiveFovLH(DirectX::XMConvertToRadians(60),
-		D3D.GetBackBuffer()->GetAspectRatio(), 0.01f, 5000.0f);
+	if ((GetTag() & OBJECT_TAG::TAG_Player) != 0)
+	{
+		Scene::Getinstance().SetTargetCamera(m_spCameraComponent);
+	}
 }
 
 void AirCraft::Update()
@@ -23,6 +28,10 @@ void AirCraft::Update()
 
 	UpdateShoot();
 
+	if (m_spCameraComponent)
+	{
+		m_spCameraComponent->SetCameraMatrix(m_mWorld);
+	}
 }
 
 
@@ -47,24 +56,6 @@ void AirCraft::ImGuiUpdate()
 	}
 }
 
-void AirCraft::SetCameraToShader()
-{
-	//追従カメラ行列の作成：追従カメラからの相対座標行列にゲーム上の飛行機の絶対座標行列を合成
-	Math::Matrix mCam = m_mOffset * m_mWorld;
-
-	//追従カメラ座標をシェーダーにセット
-	SHADER.m_cb7_Camera.Work().CamPos = mCam.Translation();
-
-	//追従カメラのビュー行列をシェーダーにセット
-	mCam.Invert();
-	SHADER.m_cb7_Camera.Work().mV = mCam;
-
-	//追従カメラの射影行列をシェーダーにセット
-	SHADER.m_cb7_Camera.Work().mP = m_mProj;
-
-	//カメラ情報(ビュー行列、射影行列)をシェーダーの定数バッファにセット
-	SHADER.m_cb7_Camera.Write();
-}
 
 void::AirCraft::UpdateMove()
 {
