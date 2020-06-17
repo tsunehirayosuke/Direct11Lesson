@@ -20,6 +20,65 @@ Scene::~Scene()
 //初期化
 void Scene::Init()
 {
+	std::ifstream ifs("Data/test.json");
+	if (ifs.fail()) { assert(0 && "Jsonのファイルのパスが違います"); }
+
+
+	//文字列として全読み込み
+	std::string strJson((std::istreambuf_iterator<char>(ifs)), std::istreambuf_iterator<char>());
+
+	//文字列のJsonを解析（パース）する
+	std::string err;
+	json11::Json jsonObj = json11::Json::parse(strJson, err);
+	if (err.size() > 0) { assert(0 && "読み込んだファイルのJson変換に失敗"); }
+
+	//値アクセス
+	{
+		OutputDebugStringA(jsonObj["Name"].string_value().append("\n").c_str());
+
+		OutputDebugStringA(std::to_string(jsonObj["Hp"].int_value()).append("\n").c_str());
+	}
+
+	//配列アクセス
+	{
+		//配列全アクセス
+		auto& pos = jsonObj["Position"].array_items();
+		for (auto&& p : pos)
+		{
+			OutputDebugStringA(std::to_string(p.number_value()).append("\n").c_str());
+		}
+		//配列添字アクセス
+		OutputDebugStringA(std::to_string(pos[0].number_value()).append("\n").c_str());
+		OutputDebugStringA(std::to_string(pos[1].number_value()).append("\n").c_str());
+		OutputDebugStringA(std::to_string(pos[2].number_value()).append("\n").c_str());
+	}
+
+	//Object取得
+	auto& object = jsonObj["monster"].object_items();
+	OutputDebugStringA(object["name"].string_value().append("\n").c_str());
+	OutputDebugStringA(std::to_string(object["hp"].int_value()).append("\n").c_str());
+	OutputDebugStringA(std::to_string(object["pos"][0].number_value()).append("\n").c_str());
+	OutputDebugStringA(std::to_string(object["pos"][1].number_value()).append("\n").c_str());
+	OutputDebugStringA(std::to_string(object["pos"][2].number_value()).append("\n").c_str());
+	
+	//Object配列取得
+	{
+		auto& objects = jsonObj["techniques"].array_items();
+		for (auto&& object : objects)
+		{
+			//共通要素はチェック無しでアクセス
+			OutputDebugStringA(object["name"].string_value().append("\n").c_str());
+			OutputDebugStringA(std::to_string(object["atk"].int_value()).append("\n").c_str());
+			OutputDebugStringA(std::to_string(object["hitrate"].number_value()).append("\n").c_str());
+
+			//固有のパラメーターはチェックしてから
+			if (object["effect"].is_string())
+			{
+				OutputDebugStringA(object["effect"].string_value().append("\n").c_str());
+			}
+		}
+	}
+
 	m_pCamera = new EditorCamera();
 
 	m_spsky = KdResourceFactory::GetInstance().GetModel("Data/Sky/Sky.gltf");

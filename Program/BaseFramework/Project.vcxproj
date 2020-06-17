@@ -149,6 +149,7 @@
     <ClInclude Include="..\Library\Imgui\imstb_textedit.h" />
     <ClInclude Include="..\Library\Imgui\imstb_truetype.h" />
     <ClInclude Include="..\Library\Imgui\ja_glyph_ranges.h" />
+    <ClInclude Include="..\Library\json11KdCustom\json11.hpp" />
     <ClInclude Include="..\Library\strconv.h" />
     <ClInclude Include="..\Library\tinygltf\json.hpp" />
     <ClInclude Include="..\Library\tinygltf\stb_image.h" />
@@ -156,6 +157,7 @@
     <ClInclude Include="..\Library\tinygltf\tiny_gltf.h" />
     <ClInclude Include="Src\Application\Component\CameraComponent.h" />
     <ClInclude Include="Src\Application\Component\InputComponent.h" />
+    <ClInclude Include="Src\Application\Component\ModelComponent.h" />
     <ClInclude Include="Src\Application\Game\EditorCamera.h" />
     <ClInclude Include="Src\Application\Game\GameObject.h" />
     <ClInclude Include="Src\Application\Game\Scene.h" />
@@ -188,8 +190,10 @@
     <ClCompile Include="..\Library\Imgui\imgui_impl_win32.cpp" />
     <ClCompile Include="..\Library\Imgui\imgui_stdlib.cpp" />
     <ClCompile Include="..\Library\Imgui\imgui_widgets.cpp" />
+    <ClCompile Include="..\Library\json11KdCustom\json11.cpp" />
     <ClCompile Include="Src\Application\Component\CameraComponent.cpp" />
     <ClCompile Include="Src\Application\Component\InputComponent.cpp" />
+    <ClCompile Include="Src\Application\Component\ModelComponent.cpp" />
     <ClCompile Include="Src\Application\Game\EditorCamera.cpp" />
     <ClCompile Include="Src\Application\Game\GameObject.cpp" />
     <ClCompile Include="Src\Application\Game\Scene.cpp" />

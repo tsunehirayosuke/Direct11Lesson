@@ -9,11 +9,32 @@ namespace Input
 		R,
 		AXS_MAX
 	};
+
+	enum Buttons
+	{
+		A,
+		B,
+		X,
+		Y,
+		L1,
+		R1,
+		BTN_MAX
+	};
 }
 
 class InputComponent
 {
 public:
+
+	//ボタン状態
+	enum
+	{
+		Free  =0x00000000,
+		Enter =0x00000001,
+		Stay  =0x00000002,
+		Exit  =0x00000004,
+	};
+
 	//コンストラクタ：オーナーの設定、ボタンの初期化
 	InputComponent(GameObject& owner);
 	
@@ -28,10 +49,25 @@ public:
 		assert(no != Input::Axes::AXS_MAX);
 		return m_axes[no];
 	}
+
+	//ボタン軸取得
+	inline int GetButton(Input::Buttons no)const
+	{
+		assert(no != Input::Buttons::BTN_MAX);
+		return m_buttons[no];
+	}
+
+	//ボタンを押す
+	void PushButton(Input::Buttons no);
+	//ボタンを離す
+	void ReleaseButton(Input::Buttons no);
+
 protected:
 
 	//操作軸
 	std::array<Math::Vector2, Input::Axes::AXS_MAX> m_axes;
+	//ボタン軸
+	std::array<int, Input::Buttons::BTN_MAX> m_buttons;
 	//持ち主
 	GameObject& m_owner;
 };

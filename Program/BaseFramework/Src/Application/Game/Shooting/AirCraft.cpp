@@ -3,11 +3,14 @@
 #include "../Scene.h"
 #include "../../Component/CameraComponent.h"
 #include "../../Component/InputComponent.h"
+#include "../../Component/ModelComponent.h"
 
 void AirCraft::Deserialize()
 {
-	m_spModel = KdResourceFactory::GetInstance().GetModel("Data/Aircraft/Aircraft_body.gltf");
-
+	if (m_spModelComponent)
+	{
+		m_spModelComponent->SetModel(KdResFac.GetModel("Data/Aircraft/Aircraft_body.gltf"));
+	}
 
 	//初期配列座標を地面から少し浮いた位置にする
 	m_mWorld.CreateTranslation(0.0f, 5.0f, 0.0f);
@@ -99,12 +102,7 @@ void::AirCraft::UpdateMove()
 	m_mWorld = moveMat * m_mWorld;
 
 	//回転ベクトルの作成
-	KdVec3 rotate;
-
-	if (GetAsyncKeyState('W') & 0x8000) { rotate.x = 1.0f; }
-	if (GetAsyncKeyState('A') & 0x8000) { rotate.z = -1.0f; }
-	if (GetAsyncKeyState('S') & 0x8000) { rotate.x = -1.0f; }
-	if (GetAsyncKeyState('D') & 0x8000) { rotate.z = 1.0f; }
+	KdVec3 rotate = { inputMove.y,0.0f,inputMove.x };
 
 	//回転行列作成
 	KdMatrix rotateMat;
@@ -117,7 +115,12 @@ void::AirCraft::UpdateMove()
 
 void AirCraft::UpdateShoot()
 {
-	if (GetAsyncKeyState(VK_SPACE) & 0x8000)
+	if (m_spInputComponent == nullptr)
+	{
+		return;
+	}
+
+	if (m_spInputComponent->GetButton(Input::Buttons::A))
 	{
 		if (mcanShoot)
 		{

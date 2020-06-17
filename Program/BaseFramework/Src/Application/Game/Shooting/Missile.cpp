@@ -1,13 +1,16 @@
 ﻿#include"Missile.h"
 
 #include"Application//main.h"
+#include "../../Component/ModelComponent.h"
 
 
 
 void Missile::Deserialize()
 {
-	m_spModel = KdResourceFactory::GetInstance().GetModel("Data/Missile/Missile.gltf");
-
+	if (m_spModelComponent)
+	{
+		m_spModelComponent->SetModel(KdResFac.GetModel("Data/Missile/Missile.gltf"));
+	}
 	m_lifeSpan = APP.m_maxFps * 10;
 }
 
