@@ -18,7 +18,7 @@ public:
 	GameObject();
 	virtual ~GameObject();
 
-	virtual void Deserialise();
+	virtual void Deserialise(const json11::Json& jsonObj);
 	virtual void Update();
 	virtual void Draw();
 

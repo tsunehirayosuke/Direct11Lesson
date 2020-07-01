@@ -5,12 +5,17 @@
 #include "../../Component/InputComponent.h"
 #include "../../Component/ModelComponent.h"
 
-void AirCraft::Deserialize()
+void AirCraft::Deserialize(const json11::Json& jsonObj)
 {
-	if (m_spModelComponent)
+
+	if (jsonObj.is_null()==false)
 	{
-		m_spModelComponent->SetModel(KdResFac.GetModel("Data/Aircraft/Aircraft_body.gltf"));
+		if (m_spModelComponent)
+		{
+			m_spModelComponent->SetModel(KdResFac.GetModel(jsonObj["ModelFileName"].string_value()));
+		}
 	}
+	
 
 	//初期配列座標を地面から少し浮いた位置にする
 	m_mWorld.CreateTranslation(0.0f, 5.0f, 0.0f);
