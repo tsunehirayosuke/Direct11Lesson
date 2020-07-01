@@ -72,13 +72,24 @@ protected:
 	GameObject& m_owner;
 };
 
-
+///////////////////////////////////////
 //キーボード用入力コンポーネント
-
+///////////////////////////////////////
 class PlayerInputComponent :public InputComponent
 {
 public:
 	PlayerInputComponent(GameObject& owner) :InputComponent(owner) {}
 
 	virtual void Update() override;
+};
+///////////////////////////////////////
+//敵用入力コンポーネント
+///////////////////////////////////////
+class EnemyInputComponent :public InputComponent
+{
+public:
+	EnemyInputComponent(GameObject& owner) :InputComponent(owner) {}
+
+	virtual void Update() override;
+
 };
