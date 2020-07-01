@@ -5,13 +5,18 @@
 
 
 
-void Missile::Deserialize()
+void Missile::Deserialize(const json11::Json& jsonObj)
 {
-	if (m_spModelComponent)
-	{
-		m_spModelComponent->SetModel(KdResFac.GetModel("Data/Missile/Missile.gltf"));
-	}
 	m_lifeSpan = APP.m_maxFps * 10;
+
+	if (jsonObj.is_null()) { return; }
+	
+	GameObject::Deserialize(jsonObj);
+
+	if (jsonObj["Speed"].is_null() == false)
+	{
+		m_speed = jsonObj["Speed"].number_value();
+	}
 }
 
 void Missile::Update()

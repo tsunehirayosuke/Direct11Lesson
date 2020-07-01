@@ -8,7 +8,7 @@ class AirCraft : public GameObject
 {
 public:
 
-	void Deserialize(const json11::Json& jsonObj); //初期化:オブジェクト作成用外部データの解釈
+	void Deserialize(const json11::Json& jsonObj)override; //初期化:オブジェクト作成用外部データの解釈
 	void Update();		//更新
 
 	void ImGuiUpdate(); //AirCraftクラス専用のImGui更新

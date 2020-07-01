@@ -116,6 +116,12 @@ public:
 		*this = DirectX::XMMatrixRotationX(angle);
 	}
 
+	//拡縮行列作成
+	void CreateScaling(float x, float y, float z)
+	{
+		*this = DirectX::XMMatrixScaling(x, y, z);
+	}
+
 	//透視影行列の作成
 	KdMatrix& CreateProjectionPerspectiveFov(float fovAngleY, float aspectRatio, float nearZ, float farZ)
 	{
@@ -124,11 +130,25 @@ public:
 	}
 
 	//操作==================================================================
+	//Z軸回転
 	void RotateZ(float angle)
 	{
 		*this *= DirectX::XMMatrixRotationZ(angle);
 	}
 
+	//Y軸回転
+	void RotateY(float angle)
+	{
+		*this *= DirectX::XMMatrixRotationY(angle);
+	}
+
+	//拡縮
+	void Scale(float x, float y, float z)
+	{
+		*this = DirectX::XMMatrixScaling(x, y, z);
+	}
+
+	//逆行列にする
 	void Inverse()
 	{
 		*this = DirectX::XMMatrixInverse(nullptr, *this);
