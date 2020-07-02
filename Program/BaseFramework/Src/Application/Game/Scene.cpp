@@ -87,26 +87,7 @@ void Scene::Init()
 
 void Scene::Deserialize()
 {
-	std::shared_ptr<GameObject> spGround = std::make_shared<GameObject>();
-	if (spGround)
-	{
-		spGround->Deserialize(KdLoadJson("Data/Scene/StageMap.json"));
-		m_spObjects.push_back(spGround);
-	}
-
-	std::shared_ptr<AirCraft> spAircraft = std::make_shared<AirCraft>();
-	if (spAircraft)
-	{
-		spAircraft->Deserialize(KdLoadJson("Data/Scene/Aircraft.json"));
-		m_spObjects.push_back(spAircraft);
-	}
-
-	std::shared_ptr<AirCraft> spEnemyAircraft = std::make_shared<AirCraft>();
-	if (spEnemyAircraft)
-	{
-		spEnemyAircraft->Deserialize(KdLoadJson("Data/Scene/Enemy.json"));
-		m_spObjects.push_back(spEnemyAircraft);
-	}
+	LoadScene("Data/Scene/ShootingGame.json");
 }
 
 //解放
@@ -209,6 +190,36 @@ void Scene::Draw()
 			SHADER.m_effectShader.DrawVertices(m_debugLines, D3D_PRIMITIVE_TOPOLOGY_LINELIST);
 		}
 		D3D.GetDevContext()->OMSetDepthStencilState(SHADER.m_ds_ZEnable_ZWriteEnable, 0);
+	}
+}
+
+void Scene::LoadScene(const std::string& sceneFilename)
+{
+	//GameObjectリストを空にする
+	m_spObjects.clear();
+
+	//JSON読み込み
+	json11::Json json = KdLoadJson(sceneFilename);
+	if (json.is_null())
+	{
+		assert(0 && "[LoadScene]jsonファイル読み込み失敗");
+		return;
+	}
+
+	//オブジェクトリスト取得
+	auto& objectDataList = json["GameObjects"].array_items();
+
+	//オブジェクト生成ループ
+	for (auto&& objJsonData : objectDataList)
+	{
+		//オブジェクト作成
+		auto newGameObj = CreateGameObject(objJsonData["ClassName"].string_value());
+
+		//オブジェクトのデシリアライズ
+		newGameObj->Deserialize(objJsonData);
+
+		//リストへ追加
+		AddObject(newGameObj);
 	}
 }
 

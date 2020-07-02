@@ -58,6 +58,8 @@ protected:
 	std::string m_name = "GameObject";
 };
 
+std::shared_ptr<GameObject> CreateGameObject(const std::string& name);
+
 //球判定に使う球データ
 struct SphereInfo
 {

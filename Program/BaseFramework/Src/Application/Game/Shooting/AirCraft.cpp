@@ -165,7 +165,7 @@ void AirCraft::UpdateCollision()
 		if (!(obj->GetTag() & TAG_Character)) { continue; }
 
 		//当たり判定
-		if (obj->HitCheckBySphere(info.m_pos())
+		if (obj->HitCheckBySphere(info))
 		{
 			Scene::Getinstance().AddDebugSphereLine(
 				m_mWorld.GetTranslation(), 2.0f, { 1.0f,0.0f,0.0f,1.0f }

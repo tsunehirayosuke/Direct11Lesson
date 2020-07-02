@@ -24,6 +24,8 @@ public:
 	void Update();	//更新
 	void Draw();	//描画
 
+	void LoadScene(const std::string& sceneFilename);
+
 	//GameObjectのリストを返す
 	const std::list<std::shared_ptr<GameObject>>GetObjects()const { return m_spObjects; }
 
