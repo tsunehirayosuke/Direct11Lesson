@@ -60,8 +60,8 @@ void  PlayerInputComponent::Update()
 
 	//右の値
 	if (GetAsyncKeyState('W') & 0x8000) { m_axes[Input::Axes::R].y = 1.0f; }
-	if (GetAsyncKeyState('A') & 0x8000) { m_axes[Input::Axes::R].y = -1.0f; }
-	if (GetAsyncKeyState('S') & 0x8000) { m_axes[Input::Axes::R].x = -1.0f; }
+	if (GetAsyncKeyState('A') & 0x8000) { m_axes[Input::Axes::R].x = -1.0f; }
+	if (GetAsyncKeyState('S') & 0x8000) { m_axes[Input::Axes::R].y = -1.0f; }
 	if (GetAsyncKeyState('D') & 0x8000) { m_axes[Input::Axes::R].x = 1.0f; }
 
 

@@ -91,28 +91,28 @@ void Scene::Deserialize()
 	if (spGround)
 	{
 		spGround->Deserialize(KdLoadJson("Data/Scene/StageMap.json"));
-		m_objects.push_back(spGround);
+		m_spObjects.push_back(spGround);
 	}
 
 	std::shared_ptr<AirCraft> spAircraft = std::make_shared<AirCraft>();
 	if (spAircraft)
 	{
 		spAircraft->Deserialize(KdLoadJson("Data/Scene/Aircraft.json"));
-		m_objects.push_back(spAircraft);
+		m_spObjects.push_back(spAircraft);
 	}
 
 	std::shared_ptr<AirCraft> spEnemyAircraft = std::make_shared<AirCraft>();
 	if (spEnemyAircraft)
 	{
 		spEnemyAircraft->Deserialize(KdLoadJson("Data/Scene/Enemy.json"));
-		m_objects.push_back(spEnemyAircraft);
+		m_spObjects.push_back(spEnemyAircraft);
 	}
 }
 
 //解放
 void::Scene::Release()
 {
-	m_objects.clear();
+	m_spObjects.clear();
 }
 
 //更新
@@ -122,16 +122,16 @@ void Scene::Update()
 	{
 		m_pCamera->Update();
 	}
-	for (auto pObject : m_objects)
+	for (auto pObject : m_spObjects)
 	{
 		pObject->Update();
 	}
-	for (auto spObjectItr = m_objects.begin(); spObjectItr != m_objects.end();)
+	for (auto spObjectItr = m_spObjects.begin(); spObjectItr != m_spObjects.end();)
 	{
 		//寿命が尽きていたらリストから除外
 		if ((*spObjectItr)->IsAlive() == false)
 		{
-			spObjectItr = m_objects.erase(spObjectItr);
+			spObjectItr = m_spObjects.erase(spObjectItr);
 		}
 		else
 		{
@@ -183,7 +183,7 @@ void Scene::Draw()
 	SHADER.m_standardShader.SetToDevice();
 
 	
-	for (auto pObject : m_objects)
+	for (auto pObject : m_spObjects)
 	{
 		pObject->Draw();
 	}
@@ -215,7 +215,7 @@ void Scene::Draw()
 void Scene::AddObject(std::shared_ptr<GameObject> spObject)
 {
 	if (spObject == nullptr) { return; }
-	m_objects.push_back(spObject);
+	m_spObjects.push_back(spObject);
 }
 
 void Scene::ImGuiUpdate()

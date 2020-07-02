@@ -4,6 +4,8 @@ class CameraComponent;
 class InputComponent;
 class ModelComponent;
 
+struct SphereInfo;
+
 enum OBJECT_TAG
 {
 	TAG_None		 = 0x00000000,//属性無し、初期設定
@@ -32,6 +34,9 @@ public:
 
 	//カメラコンポーネント取得
 	std::shared_ptr<CameraComponent> GetCameraComponent() { return m_spCameraComponent; }
+
+	//球による当たり判定
+	bool HitCheckBySphere(const SphereInfo& rInfo);
 protected:
 
 	virtual void Release();
@@ -45,8 +50,17 @@ protected:
 	//モデルコンポーネント取得
 	std::shared_ptr<ModelComponent> m_spModelComponent = std::make_shared<ModelComponent>(*this);
 	
+	float m_colRadius = 2.0f;
+
 	KdMatrix	m_mWorld;
 	bool		m_alive = true;
 	UINT		m_tag = OBJECT_TAG::TAG_None;
 	std::string m_name = "GameObject";
+};
+
+//球判定に使う球データ
+struct SphereInfo
+{
+	KdVec3 m_pos{};
+	float m_radius = 0.0f;
 };

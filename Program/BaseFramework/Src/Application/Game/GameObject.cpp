@@ -78,3 +78,28 @@ void GameObject::Release()
 {
 
 }
+
+
+//球による当たり判定(距離判定）
+bool GameObject::HitCheckBySphere(const SphereInfo& rInfo)
+{
+	//当たった距離計算
+	float hitRange = rInfo.m_radius + m_colRadius;
+
+	//自分の座標ベクトル
+	KdVec3 myPos = m_mWorld.GetTranslation();
+
+	//二点間のベクトルを計算
+	KdVec3 betweenVec = rInfo.m_pos - myPos;
+
+	//二点間の距離を計算
+	float distance = betweenVec.Length();
+
+	bool isHit = false;
+	if (distance <= hitRange)
+	{
+		isHit = true;
+	}
+
+	return isHit;
+}

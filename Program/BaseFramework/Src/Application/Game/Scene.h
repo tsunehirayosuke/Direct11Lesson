@@ -24,6 +24,9 @@ public:
 	void Update();	//更新
 	void Draw();	//描画
 
+	//GameObjectのリストを返す
+	const std::list<std::shared_ptr<GameObject>>GetObjects()const { return m_spObjects; }
+
 	void AddObject(std::shared_ptr<GameObject> spObject);
 
 	inline void SetTargetCamera(std::shared_ptr<CameraComponent> spCamera) { m_wpTargetCamera = spCamera; }
@@ -38,6 +41,7 @@ public:
 
 	//デバッグ座標軸描画
 	void AddDebugCoordinateAxisLine(const Math::Vector3& pos, float scale = 1.0f);
+
 private:
 
 	Scene();        //コンストラクタ
@@ -46,7 +50,7 @@ private:
 	EditorCamera*	m_pCamera;
 	bool			m_editorCameraEnable = true;
 
-	std::list<std::shared_ptr<GameObject>> m_objects;
+	std::list<std::shared_ptr<GameObject>> m_spObjects;
 
 	//ターゲットのカメラ
 	std::weak_ptr<CameraComponent>m_wpTargetCamera;

@@ -37,9 +37,14 @@ void AirCraft::Update()
 	{
 		m_spInputComponent->Update();
 	}
+
+	m_prevPos = m_mWorld.GetTranslation();
+
 	UpdateMove();
 
 	UpdateShoot();
+
+	UpdateCollision();
 
 	if (m_spCameraComponent)
 	{
@@ -78,6 +83,7 @@ void::AirCraft::UpdateMove()
 	}
 
 	const Math::Vector2& inputMove = m_spInputComponent->GetAxis(Input::Axes::L);
+	const Math::Vector2& inputRotate = m_spInputComponent->GetAxis(Input::Axes::R);
 
 
 	//移動ベクトル作成
@@ -104,7 +110,7 @@ void::AirCraft::UpdateMove()
 	m_mWorld = moveMat * m_mWorld;
 
 	//回転ベクトルの作成
-	KdVec3 rotate = { inputMove.y,0.0f,inputMove.x };
+	KdVec3 rotate = { inputRotate.y,0.0f,inputRotate.x };
 
 	//回転行列作成
 	KdMatrix rotateMat;
@@ -141,5 +147,32 @@ void AirCraft::UpdateShoot()
 	else
 	{
 		mcanShoot = true;
+	}
+}
+
+void AirCraft::UpdateCollision()
+{
+	SphereInfo info;
+	info.m_pos = m_mWorld.GetTranslation();
+	info.m_radius = m_colRadius;
+
+	for(auto& obj : Scene::Getinstance().GetObjects())
+	{
+		//自分自身
+		if (obj.get() == this) { continue; }
+
+		//キャラクターとのみ当たり判定
+		if (!(obj->GetTag() & TAG_Character)) { continue; }
+
+		//当たり判定
+		if (obj->HitCheckBySphere(info.m_pos())
+		{
+			Scene::Getinstance().AddDebugSphereLine(
+				m_mWorld.GetTranslation(), 2.0f, { 1.0f,0.0f,0.0f,1.0f }
+			);
+
+			//移動する前の位置に戻る
+			m_mWorld.SetTranslstion(m_prevPos);
+		}
 	}
 }
