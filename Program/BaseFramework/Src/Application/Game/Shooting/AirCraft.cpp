@@ -136,7 +136,7 @@ void AirCraft::UpdateShoot()
 			if (spMissile)
 			{
 
-				spMissile->Deserialize(KdLoadJson("Data/Scene/Missile.json"));
+				spMissile->Deserialize(KdResFac.GetJSON("Data/Scene/Missile.json"));
 				spMissile->SetMatrix(m_mWorld);
 
 				Scene::Getinstance().AddObject(spMissile);

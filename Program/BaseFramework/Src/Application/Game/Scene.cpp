@@ -199,7 +199,7 @@ void Scene::LoadScene(const std::string& sceneFilename)
 	m_spObjects.clear();
 
 	//JSON読み込み
-	json11::Json json = KdLoadJson(sceneFilename);
+	json11::Json json = KdResFac.GetJSON(sceneFilename);
 	if (json.is_null())
 	{
 		assert(0 && "[LoadScene]jsonファイル読み込み失敗");
@@ -214,6 +214,9 @@ void Scene::LoadScene(const std::string& sceneFilename)
 	{
 		//オブジェクト作成
 		auto newGameObj = CreateGameObject(objJsonData["ClassName"].string_value());
+
+		//プレハブ指定有の場合は、プレハブ側のものをベースにこのJSONをマージする
+		KdMergePrefab(objJsonData);
 
 		//オブジェクトのデシリアライズ
 		newGameObj->Deserialize(objJsonData);

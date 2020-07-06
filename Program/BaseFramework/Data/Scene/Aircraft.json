@@ -3,5 +3,5 @@
   "Tag": 19,
   "ModelFileName": "Data/Aircraft/Aircraft_body.gltf",
   "Pos": [ 0, 10, 0 ],
-  "Rot": [ 0, 15, 0 ]
+  "Rot": [ 0, 45, 0 ]
 }

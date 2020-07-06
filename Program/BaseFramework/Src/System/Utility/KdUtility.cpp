@@ -18,3 +18,27 @@ void KdGetTextuxxreInfo(ID3D11View* view, D3D11_TEXTURE2D_DESC& outDesc)
 	}
 	res->Release();
 }
+
+void KdMergePrefab(json11::Json& rSrcJson)
+{
+	//プレハブ指定有の場合は、プレハブ側のものをベースにこのJSONをマージする
+	std::string prefabFilename = rSrcJson["Prefab"].string_value();
+
+	if (prefabFilename.size() > 0)
+	{
+		json11::Json prefJson = KdResFac.GetJSON(prefabFilename);
+
+		//JSON読み込み
+		if (prefJson.is_null() == false)
+		{
+			//マージする
+			for (auto&& n : rSrcJson.object_items())
+			{
+				prefJson[n.first] = n.second;
+			}
+		//マージしたものに差し替え
+			rSrcJson = prefJson;
+
+		}
+	}
+}
