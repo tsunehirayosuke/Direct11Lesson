@@ -5,12 +5,14 @@ class InputComponent;
 class ModelComponent;
 
 struct SphereInfo;
+struct RayInfo;
 
 enum OBJECT_TAG
 {
 	TAG_None		 = 0x00000000,//属性無し、初期設定
 	TAG_Character	 = 0x00000001,//キャラクター属性
 	TAG_Player		 = 0x00000002,//プレイヤー属性
+	TAG_AttackHit	 = 0x00000010,//攻撃が当たる属性属性
 };
 
 class GameObject : public std::enable_shared_from_this<GameObject>
@@ -37,6 +39,8 @@ public:
 
 	//球による当たり判定
 	bool HitCheckBySphere(const SphereInfo& rInfo);
+
+	bool HitCheckByRay(const RayInfo& rInfo);
 protected:
 
 	virtual void Release();
@@ -65,4 +69,11 @@ struct SphereInfo
 {
 	KdVec3 m_pos{};
 	float m_radius = 0.0f;
+};
+
+struct RayInfo
+{
+	KdVec3 m_pos;//レイ(光線)の発射場所
+	KdVec3 m_dir;//レイの発射方向
+	float m_maxRange = 0.0f; //レイが届く最大距離
 };

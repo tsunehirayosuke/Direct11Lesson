@@ -106,6 +106,31 @@ bool GameObject::HitCheckBySphere(const SphereInfo& rInfo)
 	return isHit;
 }
 
+//レイによる当たり判定
+bool GameObject::HitCheckByRay(const RayInfo& rInfo)
+{
+	//判定をする対象のモデルがない場合は当っていない
+	if (!m_spModelComponent) { return false; }
+
+	//発射方向を正規化する
+	KdVec3 rayDir = rInfo.m_dir;
+	rayDir.Normalize();
+	
+	//面情報の取得
+	const std::shared_ptr<KdMesh>& mesh = m_spModelComponent->GetMesh();//モデル(メッシュ)情報の取得
+	const KdMeshFace* pFace = &mesh->GetFaces()[0];//面情報の先頭を取得
+	UINT faceNum = mesh->GetFaces().size;//面の総数の取得
+
+	//すべての面(三角形)と当たり判定
+	for (UINT faceIdx = 0; faceIdx < faceNum; faceIdx++)
+	{
+		//三角形を構成する３つの頂点のIndex
+		const UINT* idx = pFace[faceIdx].Idx;
+
+
+	}
+}
+
 std::shared_ptr<GameObject> CreateGameObject(const std::string& name)
 {
 	if (name == "GameObject")

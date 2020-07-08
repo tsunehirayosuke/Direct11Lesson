@@ -61,6 +61,16 @@ public:
 	{
 		return DirectX::XMVector3Length(*this).m128_f32[0];
 	}
+
+	static float Dot(const KdVec3& v1, const KdVec3& v2)
+	{
+		return DirectX::XMVector3Dot(v1, v2).m128_f32[0];
+	}
+
+	static KdVec3 Cross(const KdVec3& v1, const KdVec3& v2)
+	{
+		return DirectX::XMVector3Cross(v1, v2);
+	}
 };
 
 //４*４の行列
@@ -120,6 +130,12 @@ public:
 	void CreateScaling(float x, float y, float z)
 	{
 		*this = DirectX::XMMatrixScaling(x, y, z);
+	}
+
+	//指定軸回転行列作成
+	void CreateRotationAxis(const KdVec3& axis, float angle)
+	{
+		*this = DirectX::XMMatrixRotationAxis(axis, angle);
 	}
 
 	//透視影行列の作成
