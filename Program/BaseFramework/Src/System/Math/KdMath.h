@@ -4,6 +4,21 @@
 class KdVec3 : public DirectX::XMFLOAT3
 {
 public:
+
+	//指定行列でVectorを変換する
+	KdVec3& TransformCoord(const DirectX::XMMATRIX& m)
+	{
+		*this = XMVector3TransformCoord(*this, m);
+		return *this;
+	}
+
+	//指定(回転)行列でVectorを変換する
+	KdVec3& TransformNormal(const DirectX::XMMATRIX& m)
+	{
+		*this = XMVector3TransformNormal(*this, m);
+		return *this;
+	}
+
 	//デフォルトコンストラクタは座標の０クリアを行う
 	KdVec3()
 	{

@@ -139,6 +139,8 @@ void AirCraft::UpdateShoot()
 				spMissile->Deserialize(KdResFac.GetJSON("Data/Scene/Missile.json"));
 				spMissile->SetMatrix(m_mWorld);
 
+				spMissile->SetOwner(shared_from_this());
+
 				Scene::Getinstance().AddObject(spMissile);
 
 				//全ゲームオブジェクトのリストからミサイルが当たる対象を探す
@@ -166,6 +168,14 @@ void AirCraft::UpdateShoot()
 
 void AirCraft::UpdateCollision()
 {
+	//一回の移動量と移動方向を計算
+	KdVec3 moveVec = m_mWorld.GetTranslation() - m_prevPos;//動く前→今の場所のベクトル
+	float moveDistance = moveVec.Length();//一回の移動量
+
+	//動いていないなら判定しない
+	if (moveDistance == 0.0f) { return; }
+
+	//球判定情報を作成
 	SphereInfo info;
 	info.m_pos = m_mWorld.GetTranslation();
 	info.m_radius = m_colRadius;
@@ -181,12 +191,65 @@ void AirCraft::UpdateCollision()
 		//当たり判定
 		if (obj->HitCheckBySphere(info))
 		{
+			//移動する前の位置に戻る
+			m_mWorld.SetTranslstion(m_prevPos);
+
 			Scene::Getinstance().AddDebugSphereLine(
 				m_mWorld.GetTranslation(), 2.0f, { 1.0f,0.0f,0.0f,1.0f }
 			);
+		}
+	}
 
-			//移動する前の位置に戻る
+	//レイによる当たり判定
+	//レイ情報の作成
+	RayInfo rayInfo;
+	rayInfo.m_pos = m_prevPos;			//ひとつ前の場所から
+	rayInfo.m_dir = moveVec;			//動いた方向に向かって
+	rayInfo.m_maxRange = moveDistance;	//動いた分だけ判定
+
+	rayInfo.m_dir.Normalize();
+
+	for (auto& obj : Scene::Getinstance().GetObjects())
+	{
+		//自分自身は無視
+		if (obj.get() == this) { continue; }
+
+		//背景タグ以外は無視
+		if (!(obj->GetTag() & TAG_StageObject)) { continue; }
+
+		//判定実行
+		if (obj->HitCheckByRay(rayInfo))
+		{
 			m_mWorld.SetTranslstion(m_prevPos);
 		}
 	}
 }
+/*{
+	//Scene::Getinstance().AddObject(spObject);
+
+	float minDistance = FLT_MAX;
+	std::shared_ptr<GameObject> spTarget = nullptr;
+	for (auto& obj : Scene::Getinstance().GetObjects())
+	{
+		//自分自身は無視
+		if (obj.get() == this) { continue; }
+
+		if (obj->GetTag() & TAG_AttackHit)
+		{
+			//(ターゲットの座標-自身の座標)の長さの2乗　
+			float distance = KdVec3(obj->GetMatrix().GetTranslation() - m_mWorld.GetTranslation()).LengthSquared();
+
+			//一番近いオブジェクトとの距離よりも近ければ
+			if (distance < minDistance)
+			{
+				//誘導する予定のターゲットを今チェックしたGameObjectに置き換え
+				spTarget = obj;
+
+				//一番近いオブジェクトとの距離を今のものに更新
+				minDistance = distance;
+			}
+		}
+
+	}
+	//spMissile->SetTarget(spTarget);
+}*/

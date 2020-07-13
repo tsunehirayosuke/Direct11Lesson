@@ -12,7 +12,8 @@ enum OBJECT_TAG
 	TAG_None		 = 0x00000000,//属性無し、初期設定
 	TAG_Character	 = 0x00000001,//キャラクター属性
 	TAG_Player		 = 0x00000002,//プレイヤー属性
-	TAG_AttackHit	 = 0x00000010,//攻撃が当たる属性属性
+	TAG_StageObject	 = 0x00000004,//背景オブジェクト属性
+	TAG_AttackHit	 = 0x00000010,//攻撃が当たる属性
 };
 
 class GameObject : public std::enable_shared_from_this<GameObject>

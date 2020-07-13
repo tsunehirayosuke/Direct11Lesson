@@ -2,6 +2,7 @@
 
 #include"Application//main.h"
 #include "../../Component/ModelComponent.h"
+#include "../Scene.h"
 
 
 
@@ -84,4 +85,66 @@ void Missile::Update()
 	m_mWorld._41 += move.x;
 	m_mWorld._42 += move.y;
 	m_mWorld._43 += move.z;
+
+	m_prevPos = m_mWorld.GetTranslation();
+
+	UpdateCollision();
+}
+
+
+void Missile::UpdateCollision()
+{
+		//一回の移動量と移動方向を計算
+	KdVec3 moveVec = m_mWorld.GetTranslation() - m_prevPos;//動く前→今の場所のベクトル
+	float moveDistance = moveVec.Length();//一回の移動量
+
+	//動いていないなら判定しない
+	if (moveDistance == 0.0f) { return; }
+
+	//発射した主人のshared_ptr取得
+	auto spOwner = m_wpOwner.lock();
+
+	//球判定情報を作成
+	SphereInfo info;
+	info.m_pos = m_mWorld.GetTranslation();
+	info.m_radius = m_colRadius;
+	
+
+	for (auto& obj : Scene::Getinstance().GetObjects())
+	{
+		//自分自身は無視
+		if (obj.get() == this) { continue; }
+
+		//発射した主人も無視
+		if (obj.get() == spOwner.get()) { continue; }
+
+		//TAG_Characterとは球判定を行う
+		if (!(obj->GetTag() & TAG_Character)) { continue; }
+		if (obj->HitCheckBySphere(info))
+		{
+			Destroy();
+		}
+	}
+
+	//レイ情報の作成
+	RayInfo rayInfo;
+	rayInfo.m_pos = m_prevPos;			//ひとつ前の場所から
+	rayInfo.m_dir = moveVec;			//動いた方向に向かって
+	rayInfo.m_dir.Normalize();
+	rayInfo.m_maxRange = moveDistance;	//動いた分だけ判定
+
+
+	for (auto& obj : Scene::Getinstance().GetObjects())
+	{
+		//自分自身は無視
+		if (obj.get() == this) { continue; }
+
+		//TAG_StageObjectとはレイ判定を行う
+
+		if (!(obj->GetTag() & TAG_StageObject)) { continue; }
+		if (obj->HitCheckByRay(rayInfo))
+		{
+			Destroy();
+		}
+	}
 }
