@@ -107,13 +107,13 @@ bool GameObject::HitCheckBySphere(const SphereInfo& rInfo)
 }
 
 //レイによる当たり判定
-bool GameObject::HitCheckByRay(const RayInfo& rInfo)
+bool GameObject::HitCheckByRay(const RayInfo& rInfo, KdRayResult& rResult)
 {
 	//判定をする対象のモデルがない場合は当っていない
 	if (!m_spModelComponent) { return false; }
 
 	return KdRayToMesh(rInfo.m_pos, rInfo.m_dir, rInfo.m_maxRange, 
-		*(m_spModelComponent->GetMesh()), m_mWorld);
+		*(m_spModelComponent->GetMesh()), m_mWorld, rResult);
 }
 
 std::shared_ptr<GameObject> CreateGameObject(const std::string& name)

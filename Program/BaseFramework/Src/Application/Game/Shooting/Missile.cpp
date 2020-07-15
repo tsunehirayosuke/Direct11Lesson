@@ -133,6 +133,7 @@ void Missile::UpdateCollision()
 	rayInfo.m_dir.Normalize();
 	rayInfo.m_maxRange = moveDistance;	//動いた分だけ判定
 
+	KdRayResult rayResult;
 
 	for (auto& obj : Scene::Getinstance().GetObjects())
 	{
@@ -142,7 +143,7 @@ void Missile::UpdateCollision()
 		//TAG_StageObjectとはレイ判定を行う
 
 		if (!(obj->GetTag() & TAG_StageObject)) { continue; }
-		if (obj->HitCheckByRay(rayInfo))
+		if (obj->HitCheckByRay(rayInfo, rayResult))
 		{
 			Destroy();
 		}

@@ -2,7 +2,7 @@
 
 using namespace DirectX;
 
-bool KdRayToMesh(const DirectX::XMVECTOR& rRayPos, const DirectX::XMVECTOR& rRayDir, float maxDistance, const KdMesh& rMesh, const KdMatrix& rMatrix)
+bool KdRayToMesh(const DirectX::XMVECTOR& rRayPos, const DirectX::XMVECTOR& rRayDir, float maxDistance, const KdMesh& rMesh, const KdMatrix& rMatrix, KdRayResult& rResult)
 {
 	//モデルの逆行列でレイを変換
 	//KdMatrix invMat = rMatrix;
@@ -21,7 +21,9 @@ bool KdRayToMesh(const DirectX::XMVECTOR& rRayPos, const DirectX::XMVECTOR& rRay
 	//逆行列に拡縮が入っていると
 	//レイが当たった距離にも拡縮が反映されてしまうので
 	//判定用の最大距離にも拡縮を反映させておく
-	float rayCheckRange = maxDistance * XMVector3Length(rayDir).m128_f32[0];
+	//float rayCheckRange = maxDistance * XMVector3Length(rayDir).m128_f32[0];
+	float dirLength = XMVector3Length(rayDir).m128_f32[0];
+	float rayCheckRange = maxDistance * dirLength;
 
 	rayDir = XMVector3Normalize(rayDir);//高速化
 
@@ -36,6 +38,9 @@ bool KdRayToMesh(const DirectX::XMVECTOR& rRayPos, const DirectX::XMVECTOR& rRay
 
 	//最大距離以降なら範囲外なので中止
 	if (AABBdist > rayCheckRange) { return false; }
+
+	bool ret = false;//当たったかどうか
+	float closestDist = FLT_MAX;//当たった面との距離
 
 	/*面情報の取得
 	const std::shared_ptr<KdMesh>& mesh = m_spModelComponent->GetMesh();//モデル(メッシュ)情報の取得
@@ -72,8 +77,18 @@ bool KdRayToMesh(const DirectX::XMVECTOR& rRayPos, const DirectX::XMVECTOR& rRay
 		//最大距離以内か
 		if (triDist <= rayCheckRange)
 		{
-			return true;
+			ret = true;
+			//実際の長さを計算
+			triDist /= dirLength;
+
+			//近い方を残す
+			if (triDist < closestDist)
+			{
+				closestDist = triDist;
+			}
 		}
 	}
-	return false;
+	rResult.m_distance = closestDist;
+	rResult.m_hit = ret;
+	return ret;
 }

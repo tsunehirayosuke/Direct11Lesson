@@ -17,10 +17,15 @@ public:
 	void UpdateShoot(); //発射関数
 	void UpdateCollision(); //当たり判定処理
 	
+
+	void Draw() override;//描画
 private:
 
 	float		m_Speed = 0.2f;			//移動速度
 	bool		mcanShoot  = true;		//発射可能かどうか
 
 	KdVec3		m_prevPos = {};			//1フレーム前の座標
+
+	bool m_laser = false;		  //レーザー発射
+	float m_laserRange = 1000.0f; //レーザーの射程
 };

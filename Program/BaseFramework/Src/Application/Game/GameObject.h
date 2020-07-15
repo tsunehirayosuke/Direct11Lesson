@@ -41,7 +41,8 @@ public:
 	//球による当たり判定
 	bool HitCheckBySphere(const SphereInfo& rInfo);
 
-	bool HitCheckByRay(const RayInfo& rInfo);
+	//レイによる当たり判定
+	bool HitCheckByRay(const RayInfo& rInfo, KdRayResult& rResult);
 protected:
 
 	virtual void Release();
