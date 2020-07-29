@@ -47,6 +47,11 @@ void KdShaderManager::Init()
 	m_ds_ZEnable_ZWriteEnable = D3D.CreateDepthStencilState(true, true);
 	m_ds_ZDisable_ZWriteDisable= D3D.CreateDepthStencilState(false, false);
 
+	m_ds_ZEnable_ZWriteDisable = D3D.CreateDepthStencilState(false, false);
+
+	//ラスタライザステート作成
+	m_rs_CullBack = D3D.CreateRasterizerState(D3D11_CULL_BACK, D3D11_FILL_SOLID, true, false);
+	m_rs_CullNone = D3D.CreateRasterizerState(D3D11_CULL_NONE, D3D11_FILL_SOLID, true, false);
 }
 
 void KdShaderManager::Release()
@@ -60,4 +65,10 @@ void KdShaderManager::Release()
 
 	KdSafeRelease(m_ds_ZEnable_ZWriteEnable);
 	KdSafeRelease(m_ds_ZDisable_ZWriteDisable);
+
+	KdSafeRelease(m_ds_ZDisable_ZWriteDisable);
+
+	//ラスタライザステー開放
+	KdSafeRelease(m_rs_CullBack);
+	KdSafeRelease(m_rs_CullNone);
 }

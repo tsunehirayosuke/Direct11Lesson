@@ -11,12 +11,15 @@ public:
 	//モデルデータ取得
 	std::shared_ptr<kdModel> GetModel(const std::string& filename);
 
+	std::shared_ptr<KdTexture> GetTexture(const std::string& filename);
+
 	json11::Json GetJSON(const std::string& filename);
 
 	//管理を破棄する
 	void Clear()
 	{
 		m_modelmap.clear();
+		m_texmap.clear();
 		m_jsonmap.clear();
 	}
 private:
@@ -25,6 +28,8 @@ private:
 
 	//モデルデータ管理マップ
 	std::unordered_map<std::string, std::shared_ptr<kdModel>> m_modelmap;
+
+	std::unordered_map<std::string, std::shared_ptr<KdTexture>> m_texmap;
 
 	std::unordered_map<std::string, json11::Json> m_jsonmap;
 

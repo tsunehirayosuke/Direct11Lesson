@@ -14,7 +14,7 @@ public:
 	void SetEnable(bool enable) { m_enable = enable; }
 
 	//モデル取得
-	inline const std::shared_ptr<kdModel>& GetModel()const { return m_spModel; }
+	inline const std::shared_ptr<kdModel> GetModel()const { return m_spModel; }
 
 	//メッシュ取得
 	inline const std::shared_ptr<KdMesh>GetMesh()const

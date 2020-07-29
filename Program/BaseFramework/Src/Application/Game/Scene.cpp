@@ -87,6 +87,9 @@ void Scene::Init()
 
 void Scene::Deserialize()
 {
+	m_poly.Init(10.0f, 10.0f, { 1,1,1,1 });
+	m_poly.SetTexture(KdResFac.GetTexture("Data/Texture/Explosion00.png"));
+
 	LoadScene("Data/Scene/ShootingGame.json");
 }
 
@@ -169,6 +172,32 @@ void Scene::Draw()
 		pObject->Draw();
 	}
 
+	//半透明物描画
+	SHADER.m_effectShader.SetToDevice();
+	SHADER.m_effectShader.SetTexture(D3D.GetWhiteTex()->GetSRView());
+
+	{//ポリゴンの描画
+		//Z情報は使うがZ書き込みOFF
+		D3D.GetDevContext()->OMSetDepthStencilState(SHADER.m_ds_ZEnable_ZWriteDisable, 0);
+
+		//カリング無し
+		D3D.GetDevContext()->RSSetState(SHADER.m_rs_CullNone);
+
+		KdMatrix tempMat;
+		tempMat.SetTranslation({ 0.0f,5.0f,0.0f });
+		SHADER.m_effectShader.SetWorldMatrix(tempMat);
+		SHADER.m_effectShader.WriteToCB();
+		m_poly.Draw(0);
+
+		tempMat.SetTranslation({ 5.0f,10.0f,1.0f });
+		SHADER.m_effectShader.SetWorldMatrix(tempMat);
+		SHADER.m_effectShader.WriteToCB();
+		m_poly.Draw(0);
+
+		D3D.GetDevContext()->OMSetDepthStencilState(SHADER.m_ds_ZEnable_ZWriteEnable, 0);
+		//カリング有り
+		D3D.GetDevContext()->RSSetState(SHADER.m_rs_CullBack);
+	}
 	//デバッグライン描画
 	SHADER.m_effectShader.SetToDevice();
 	SHADER.m_effectShader.SetTexture(D3D.GetWhiteTex()->GetSRView());
@@ -190,6 +219,8 @@ void Scene::Draw()
 			SHADER.m_effectShader.DrawVertices(m_debugLines, D3D_PRIMITIVE_TOPOLOGY_LINELIST);
 		}
 		D3D.GetDevContext()->OMSetDepthStencilState(SHADER.m_ds_ZEnable_ZWriteEnable, 0);
+
+		m_debugLines.clear();
 	}
 }
 

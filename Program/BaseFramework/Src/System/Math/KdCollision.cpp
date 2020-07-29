@@ -21,7 +21,7 @@ bool KdRayToMesh(const DirectX::XMVECTOR& rRayPos, const DirectX::XMVECTOR& rRay
 	//逆行列に拡縮が入っていると
 	//レイが当たった距離にも拡縮が反映されてしまうので
 	//判定用の最大距離にも拡縮を反映させておく
-	//float rayCheckRange = maxDistance * XMVector3Length(rayDir).m128_f32[0];
+
 	float dirLength = XMVector3Length(rayDir).m128_f32[0];
 	float rayCheckRange = maxDistance * dirLength;
 

@@ -62,11 +62,16 @@ bool kdModel::Load(const std::string& filename)
 		rDstMaterial.BaseColor = rSrcMaterial.BaseColor;
 		rDstMaterial.BaseColorTex = std::make_shared<KdTexture>();
 
-		if (rDstMaterial.BaseColorTex->Load(fileDir + rSrcMaterial.BaseColorTexture) == false)
+		//テクスチャ読み込み
+		/*if (rDstMaterial.BaseColorTex->Load(fileDir + rSrcMaterial.BaseColorTexture) == false)
+		{
+			rDstMaterial.BaseColorTex = D3D.GetWhiteTex();
+		}*/
+		rDstMaterial.BaseColorTex = KdResFac.GetTexture(fileDir + rSrcMaterial.BaseColorTexture);
+		if (rDstMaterial.BaseColorTex == nullptr)
 		{
 			rDstMaterial.BaseColorTex = D3D.GetWhiteTex();
 		}
-
 	}
 	return true;
 }

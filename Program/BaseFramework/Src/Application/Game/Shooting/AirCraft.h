@@ -16,9 +16,10 @@ public:
 	void UpdateMove();	//移動更新処理
 	void UpdateShoot(); //発射関数
 	void UpdateCollision(); //当たり判定処理
-	
 
 	void Draw() override;//描画
+
+	void OnNotify_Damage(int damage);
 private:
 
 	float		m_Speed = 0.2f;			//移動速度
@@ -28,4 +29,33 @@ private:
 
 	bool m_laser = false;		  //レーザー発射
 	float m_laserRange = 1000.0f; //レーザーの射程
+
+	int m_hp = 10;//０になるとリストから抜く
+	int m_attackPow = 1;
+
+	//基底アクションステート
+	class BaseAction
+	{
+	public:
+		virtual void Update(AirCraft& owner) = 0;
+	};
+
+	//飛行中
+	class ActionFly : public BaseAction
+	{
+	public:
+		virtual void Update(AirCraft& owner)override;
+	};
+
+	//墜落中
+	class ActionCrash : public BaseAction
+	{
+	public:
+		virtual void Update(AirCraft& owner)override;
+		
+		int m_timer = 180;
+	};
+
+	
+	std::shared_ptr<BaseAction> m_spActionState;
 };

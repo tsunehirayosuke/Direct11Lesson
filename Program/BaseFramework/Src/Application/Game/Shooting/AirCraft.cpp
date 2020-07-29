@@ -29,6 +29,7 @@ void AirCraft::Deserialize(const json11::Json& jsonObj)
 		m_spInputComponent = std::make_shared<EnemyInputComponent>(*this);
 	}
 
+	m_spActionState = std::make_shared<ActionFly>();
 }
 
 void AirCraft::Update()
@@ -40,11 +41,10 @@ void AirCraft::Update()
 
 	m_prevPos = m_mWorld.GetTranslation();
 
-	UpdateMove();
-
-	UpdateShoot();
-
-	UpdateCollision();
+	if (m_spActionState)
+	{
+		m_spActionState->Update(*this);
+	}
 
 	if (m_spCameraComponent)
 	{
@@ -165,7 +165,7 @@ void AirCraft::UpdateShoot()
 		mcanShoot = true;
 	}
 
-	m_laser = (m_spInputComponent->GetButton(Input::Buttons::B) != InputComponent::Free);
+	m_laser = (m_spInputComponent->GetButton(Input::Buttons::A) != InputComponent::Free);
 }
 
 
@@ -195,6 +195,11 @@ void AirCraft::UpdateCollision()
 			{
 				//当たったなら爆発をインスタンス化
 				std::shared_ptr<EffectObject> effectObj = std::make_shared<EffectObject>();
+
+				//相手の飛行機へのダメージ通知
+				OnNotify_Damage(m_attackPow);
+
+				//ミサイルやレーザーの攻撃力はJsonに入れる
 				if (effectObj)
 				{
 					//キャラクターのリストに爆発の追加
@@ -241,7 +246,7 @@ void AirCraft::UpdateCollision()
 		if (obj->HitCheckBySphere(info))
 		{
 			//移動する前の位置に戻る
-			m_mWorld.SetTranslstion(m_prevPos);
+			m_mWorld.SetTranslation(m_prevPos);
 
 			Scene::Getinstance().AddDebugSphereLine(
 				m_mWorld.GetTranslation(), 2.0f, { 1.0f,0.0f,0.0f,1.0f }
@@ -271,7 +276,7 @@ void AirCraft::UpdateCollision()
 		//判定実行
 		if (obj->HitCheckByRay(rayInfo, rayResult))
 		{
-			m_mWorld.SetTranslstion(m_prevPos);
+			m_mWorld.SetTranslation(m_prevPos);
 		}
 	}
 }
@@ -295,6 +300,41 @@ void AirCraft::Draw()
 
 		Scene::Getinstance().AddDebugLine(m_prevPos, laserEnd, { 0.0f,1.0f,1.0f,1.0f });
 	}
+}
+void AirCraft::OnNotify_Damage(int damage)
+{
+	m_hp -= damage;
+
+	if (m_hp <= 0)
+	{
+		m_spActionState = std::make_shared<ActionCrash>();
+	}
+}
+
+void AirCraft::ActionFly::Update(AirCraft& owner)
+{
+	owner.UpdateMove();
+
+	owner.UpdateCollision();
+
+	owner.UpdateShoot();
+}
+
+void AirCraft::ActionCrash::Update(AirCraft& owner)
+{
+	if (!(--m_timer))
+	{
+		owner.Destroy();
+	}
+
+	KdMatrix rotation;
+	rotation.CreateRotationX(0.08f);
+	rotation.RotateY(0.055f);
+	rotation.RotateZ(0.03f);
+
+	owner.m_mWorld = rotation * owner.m_mWorld;
+
+	//owner.m_mWorld.Move(KdVec3(0.0f, -0.2f, 0.0f));
 }
 /*{
 	//Scene::Getinstance().AddObject(spObject);

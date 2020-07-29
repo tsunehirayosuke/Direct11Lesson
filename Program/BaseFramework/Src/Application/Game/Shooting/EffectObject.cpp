@@ -8,6 +8,7 @@ void EffectObject::Update()
 	if (--m_lifeSpan <= 0)
 	{
 		Destroy();
+
 		return;
 	}
 

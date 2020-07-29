@@ -24,4 +24,6 @@ private:
 	float		m_speed  = 0.5f;
 	int         m_lifeSpan = 0;
 	std::weak_ptr<GameObject> m_wpTarget;
+
+	int m_attackPow = 5;
 };

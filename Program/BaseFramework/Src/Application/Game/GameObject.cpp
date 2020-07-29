@@ -112,6 +112,8 @@ bool GameObject::HitCheckByRay(const RayInfo& rInfo, KdRayResult& rResult)
 	//判定をする対象のモデルがない場合は当っていない
 	if (!m_spModelComponent) { return false; }
 
+	if (m_spModelComponent->GetMesh() == nullptr) { return false; }
+
 	return KdRayToMesh(rInfo.m_pos, rInfo.m_dir, rInfo.m_maxRange, 
 		*(m_spModelComponent->GetMesh()), m_mWorld, rResult);
 }

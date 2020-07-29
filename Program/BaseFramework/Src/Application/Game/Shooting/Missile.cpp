@@ -72,9 +72,9 @@ void Missile::Update()
 			KdMatrix mRot;
 			mRot.CreateRotationAxis(vRotAxis, radian);
 			auto pos = m_mWorld.GetTranslation();
-			m_mWorld.SetTranslstion({ 0,0,0 });
+			m_mWorld.SetTranslation({ 0,0,0 });
 			m_mWorld *= mRot;
-			m_mWorld.SetTranslstion(pos);
+			m_mWorld.SetTranslation(pos);
 		}
 	}
 	KdVec3 move = m_mWorld.GetAxisZ();
@@ -91,7 +91,8 @@ void Missile::Update()
 	UpdateCollision();
 }
 
-
+#include"AirCraft.h"
+#include"EffectObject.h"
 void Missile::UpdateCollision()
 {
 		//一回の移動量と移動方向を計算
@@ -122,6 +123,19 @@ void Missile::UpdateCollision()
 		if (!(obj->GetTag() & TAG_Character)) { continue; }
 		if (obj->HitCheckBySphere(info))
 		{
+			//std::dynamic_pointer_cast = 基底クラスをダウンキャストするときに使う。失敗するとnullptrが帰る
+			//重い、多発する場合は設計ミス
+
+			std::shared_ptr<AirCraft> aircraft = std::dynamic_pointer_cast<AirCraft>(obj);
+			if (aircraft)
+			{
+				aircraft->OnNotify_Damage(m_attackPow);
+
+				//爆発エフェクト追加
+				auto effect = std::make_shared<EffectObject>();
+				effect->SetMatrix(m_mWorld);
+				Scene::Getinstance().AddObject(effect);
+			}
 			Destroy();
 		}
 	}

@@ -17,7 +17,6 @@ void InputComponent::PushButton(Input::Buttons no)
 	if (m_buttons[no] & Stay)
 	{
 		m_buttons[no] &= ~Enter;  //Enter反転とAND = EnterだけをOFF
-		m_buttons[no] &= ~Stay;   //Stay反転とAND  = StayだけをOFF
 	}
 
 	else

@@ -200,7 +200,7 @@ public:
 	//座標取得
 	KdVec3 GetTranslation() const { return{ _41,_42,_43 }; }
 
-	void SetTranslstion(const KdVec3& v)
+	void SetTranslation(const KdVec3& v)
 	{
 		_41 = v.x;
 		_42 = v.y;
