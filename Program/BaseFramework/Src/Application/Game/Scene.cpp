@@ -5,6 +5,7 @@
 
 #include"Shooting/AirCraft.h"
 #include"Shooting/Missile.h"
+#include"Shooting/AnimationEffect.h"
 //コンストラクタ
 Scene::Scene()
 {
@@ -60,7 +61,7 @@ void Scene::Init()
 	OutputDebugStringA(std::to_string(object["pos"][0].number_value()).append("\n").c_str());
 	OutputDebugStringA(std::to_string(object["pos"][1].number_value()).append("\n").c_str());
 	OutputDebugStringA(std::to_string(object["pos"][2].number_value()).append("\n").c_str());
-	
+
 	//Object配列取得
 	{
 		auto& objects = jsonObj["techniques"].array_items();
@@ -87,10 +88,11 @@ void Scene::Init()
 
 void Scene::Deserialize()
 {
-	m_poly.Init(10.0f, 10.0f, { 1,1,1,1 });
-	m_poly.SetTexture(KdResFac.GetTexture("Data/Texture/Explosion00.png"));
-
 	LoadScene("Data/Scene/ShootingGame.json");
+
+	std::shared_ptr<AnimationEffect> spExp = std::make_shared<AnimationEffect>();
+	spExp->SetAnimationInfo(KdResFac.GetTexture("Data/Texture/Explosion00.png"), 10.0f, 5, 5, 0.0f);
+	AddObject(spExp);
 }
 
 //解放
@@ -141,7 +143,7 @@ void Scene::Draw()
 		}
 	}
 
-	
+
 
 	//カメラ情報（ビュー行列,射影行列)を各シェーダの定数バッファにセット
 	SHADER.m_cb7_Camera.Write();
@@ -166,7 +168,7 @@ void Scene::Draw()
 	//不透明物描画
 	SHADER.m_standardShader.SetToDevice();
 
-	
+
 	for (auto pObject : m_spObjects)
 	{
 		pObject->Draw();
@@ -176,40 +178,34 @@ void Scene::Draw()
 	SHADER.m_effectShader.SetToDevice();
 	SHADER.m_effectShader.SetTexture(D3D.GetWhiteTex()->GetSRView());
 
-	{//ポリゴンの描画
-		//Z情報は使うがZ書き込みOFF
-		D3D.GetDevContext()->OMSetDepthStencilState(SHADER.m_ds_ZEnable_ZWriteDisable, 0);
+	//Z情報は使うがZ書き込みOFF
+	D3D.GetDevContext()->OMSetDepthStencilState(SHADER.m_ds_ZEnable_ZWriteDisable, 0);
 
-		//カリング無し
-		D3D.GetDevContext()->RSSetState(SHADER.m_rs_CullNone);
+	//カリング無し
+	D3D.GetDevContext()->RSSetState(SHADER.m_rs_CullNone);
 
-		KdMatrix tempMat;
-		tempMat.SetTranslation({ 0.0f,5.0f,0.0f });
-		SHADER.m_effectShader.SetWorldMatrix(tempMat);
-		SHADER.m_effectShader.WriteToCB();
-		m_poly.Draw(0);
 
-		tempMat.SetTranslation({ 5.0f,10.0f,1.0f });
-		SHADER.m_effectShader.SetWorldMatrix(tempMat);
-		SHADER.m_effectShader.WriteToCB();
-		m_poly.Draw(0);
-
-		D3D.GetDevContext()->OMSetDepthStencilState(SHADER.m_ds_ZEnable_ZWriteEnable, 0);
-		//カリング有り
-		D3D.GetDevContext()->RSSetState(SHADER.m_rs_CullBack);
+	for (auto spObj : m_spObjects)
+	{
+		spObj->DrawEffect();
 	}
+
+	D3D.GetDevContext()->OMSetDepthStencilState(SHADER.m_ds_ZEnable_ZWriteEnable, 0);
+	//カリング有り
+	D3D.GetDevContext()->RSSetState(SHADER.m_rs_CullBack);
+
 	//デバッグライン描画
 	SHADER.m_effectShader.SetToDevice();
 	SHADER.m_effectShader.SetTexture(D3D.GetWhiteTex()->GetSRView());
 	{
 		AddDebugLine(Math::Vector3(), Math::Vector3(0.0f, 10.0f, 0.0f));
 
-		AddDebugSphereLine(Math::Vector3(5.0f, 5.0f, 0.0f),2.0f);
+		AddDebugSphereLine(Math::Vector3(5.0f, 5.0f, 0.0f), 2.0f);
 
 		AddDebugCoordinateAxisLine(Math::Vector3(0.0f, 5.0f, 5.0f), 3.0f);
 
 		//Zバッファ使用Off・書き込みOff
-		D3D.GetDevContext()->OMSetDepthStencilState(SHADER.m_ds_ZDisable_ZWriteDisable,0);
+		D3D.GetDevContext()->OMSetDepthStencilState(SHADER.m_ds_ZDisable_ZWriteDisable, 0);
 
 		if (m_debugLines.size() >= 1)
 		{
@@ -270,7 +266,7 @@ void Scene::ImGuiUpdate()
 		ImGui::Checkbox("EditorCamera", &m_editorCameraEnable);
 
 	}
-		ImGui::End();
+	ImGui::End();
 }
 
 //デバッグライン描画
@@ -286,7 +282,7 @@ void Scene::AddDebugLine(const Math::Vector3& p1, const Math::Vector3& p2, const
 	//ラインの終了地点
 	ver.Pos = p2;
 	m_debugLines.push_back(ver);
-	
+
 }
 
 void Scene::AddDebugSphereLine(const Math::Vector3& pos, float radius, const Math::Color& color)
@@ -305,8 +301,8 @@ void Scene::AddDebugSphereLine(const Math::Vector3& pos, float radius, const Mat
 		m_debugLines.push_back(ver);
 
 		ver.Pos = pos;
-		ver.Pos.x += cos((float)(i+1) * (360 / kDetail) * KdToRadians) * radius;
-		ver.Pos.z += sin((float)(i+1) * (360 / kDetail) * KdToRadians) * radius;
+		ver.Pos.x += cos((float)(i + 1) * (360 / kDetail) * KdToRadians) * radius;
+		ver.Pos.z += sin((float)(i + 1) * (360 / kDetail) * KdToRadians) * radius;
 		m_debugLines.push_back(ver);
 
 		//XY平面

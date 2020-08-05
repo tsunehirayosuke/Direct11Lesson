@@ -30,6 +30,20 @@ void AirCraft::Deserialize(const json11::Json& jsonObj)
 	}
 
 	m_spActionState = std::make_shared<ActionFly>();
+
+	//インスタンス化
+	m_spPropeller = std::make_shared<GameObject>();
+	if (m_spPropeller && m_spPropeller->GetModelComponent())
+	{
+		//プロペラのモデルを読み込む
+		m_spPropeller->GetModelComponent()->SetModel(KdResFac.GetModel("Data/Aircraft/Propeller.gltf"));
+		
+		//本体からのずれの修正
+		m_mPropLocal.CreateTranslation(0.0f, 0.0f, 2.85f);
+
+		//プロペラのスピード
+		m_propRotSpeed = 0.3f;
+	}
 }
 
 void AirCraft::Update()
@@ -50,6 +64,8 @@ void AirCraft::Update()
 	{
 		m_spCameraComponent->SetCameraMatrix(m_mWorld);
 	}
+
+	UpdatePropeller();
 }
 
 
@@ -77,7 +93,7 @@ void AirCraft::ImGuiUpdate()
 
 void::AirCraft::UpdateMove()
 {
-	if (m_spInputComponent==nullptr)
+	if (m_spInputComponent == nullptr)
 	{
 		return;
 	}
@@ -87,8 +103,8 @@ void::AirCraft::UpdateMove()
 
 
 	//移動ベクトル作成
-	
-	KdVec3 move = {inputMove.x,0.0f,inputMove.y};
+
+	KdVec3 move = { inputMove.x,0.0f,inputMove.y };
 
 	move.Normalize();
 
@@ -137,6 +153,12 @@ void AirCraft::UpdateShoot()
 			{
 
 				spMissile->Deserialize(KdResFac.GetJSON("Data/Scene/Missile.json"));
+
+				KdMatrix mLaunch;
+				mLaunch.CreateRotationX((rand() % 120 - 60.0f) * KdToRadians);
+				mLaunch.RotateY((rand() % 120 - 60.0f) * KdToRadians);
+				mLaunch *= m_mWorld;
+
 				spMissile->SetMatrix(m_mWorld);
 
 				spMissile->SetOwner(shared_from_this());
@@ -234,7 +256,7 @@ void AirCraft::UpdateCollision()
 	info.m_pos = m_mWorld.GetTranslation();
 	info.m_radius = m_colRadius;
 
-	for(auto& obj : Scene::Getinstance().GetObjects())
+	for (auto& obj : Scene::Getinstance().GetObjects())
 	{
 		//自分自身
 		if (obj.get() == this) { continue; }
@@ -280,9 +302,24 @@ void AirCraft::UpdateCollision()
 		}
 	}
 }
+void AirCraft::UpdatePropeller()
+{
+	if (!m_spPropeller) { return; }
+
+	//ずれ分＊本体の位置
+	m_spPropeller->SetMatrix(m_mPropLocal * m_mWorld);
+
+	//プロペラ回転実行
+	m_mPropLocal.RotateZ(m_propRotSpeed);
+}
 void AirCraft::Draw()
 {
 	GameObject::Draw();//基底クラスのDrawを呼び出す
+
+	if (m_spPropeller)
+	{
+		m_spPropeller->Draw();
+	}
 
 	//レーザー描画
 	if (m_laser)
@@ -334,7 +371,7 @@ void AirCraft::ActionCrash::Update(AirCraft& owner)
 
 	owner.m_mWorld = rotation * owner.m_mWorld;
 
-	//owner.m_mWorld.Move(KdVec3(0.0f, -0.2f, 0.0f));
+	owner.m_mWorld.Move(KdVec3(0.0f, -0.2f, 0.0f));
 }
 /*{
 	//Scene::Getinstance().AddObject(spObject);

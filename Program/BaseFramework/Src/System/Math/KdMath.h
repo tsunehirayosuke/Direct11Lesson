@@ -184,8 +184,19 @@ public:
 	{
 		*this = DirectX::XMMatrixInverse(nullptr, *this);
 	}
-
+	void Move(const KdVec3& v)
+	{
+		_41 += v.x;
+		_42 += v.y;
+		_43 += v.z;
+	}
 	//プロパティ============================================================
+	//X軸取得
+	KdVec3 GetAxisX() const { return { _11,_12,_13 }; }
+	
+	//Y軸取得
+	KdVec3 GetAxisY() const { return { _21,_22,_23 }; }
+	
 	//Z軸取得
 	KdVec3 GetAxisZ() const { return { _31,_32,_33 }; }
 	

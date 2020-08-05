@@ -35,3 +35,53 @@ void KdSquarePolygon::Draw(int setTextureNo)
 	//指定した頂点配列を描画
 	D3D.DrawVertices(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, 4, &m_vertex, sizeof(Vertex));
 }
+
+void KdSquarePolygon::SetAnimationPos(float no)
+{
+	//アニメーションの縦横それぞれのコマ数計算
+	int x = (int)no % m_animSplitX;
+	int y = (int)no / m_animSplitX;
+
+	//1駒の幅と高さの計算
+	float w = 1.0f / m_animSplitX;
+	float h = 1.0f / m_animSplitY;
+
+	//UV座標の計算(算出はInitと同じ)
+	m_vertex[0].UV = {  x * w,     (y + 1) * h };
+	m_vertex[1].UV = {  x * w,      y * h };
+	m_vertex[2].UV = { (x + 1) * w,(y + 1) * h };
+	m_vertex[3].UV = { (x + 1) * w, y * h };
+
+	m_animPos = no;
+}
+
+void KdSquarePolygon::Animation(float speed, bool loop)
+{
+	//スピード加算
+	m_animPos += speed;
+
+	//終了判定
+	if (m_animPos >= (m_animSplitX * m_animSplitY))
+	{
+		//ループ
+		if (loop)
+		{
+			m_animPos = 0;//巻き戻し
+		}
+		//ループしない
+		else
+		{
+			//最後のコマで止まる
+			m_animPos = (float)(m_animSplitX * m_animSplitY) - 1;
+		}
+	}
+	//UV座標の更新
+	SetAnimationPos(m_animPos);
+}
+
+bool KdSquarePolygon::IsAnimationEnd()
+{
+	//終了判定
+	if (m_animPos >= (m_animSplitX * m_animSplitY) - 1) { return true; }
+	return false;
+}

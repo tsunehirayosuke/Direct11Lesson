@@ -13,14 +13,22 @@ public:
 
 	void ImGuiUpdate(); //AirCraftクラス専用のImGui更新
 
-	void UpdateMove();	//移動更新処理
-	void UpdateShoot(); //発射関数
-	void UpdateCollision(); //当たり判定処理
-
 	void Draw() override;//描画
 
 	void OnNotify_Damage(int damage);
+
 private:
+
+	void UpdateMove();	//移動更新処理
+	void UpdateShoot(); //発射関数
+	void UpdateCollision(); //当たり判定処理
+	void UpdatePropeller();//プロペラ更新
+
+	std::shared_ptr<GameObject> m_spPropeller;//プロペラ
+
+	KdMatrix m_mPropLocal;//プロペラと飛行機の距離
+
+	float m_propRotSpeed = 0.0f;//プロペラの回転速度
 
 	float		m_Speed = 0.2f;			//移動速度
 	bool		mcanShoot  = true;		//発射可能かどうか

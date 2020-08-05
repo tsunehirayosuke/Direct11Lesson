@@ -11,13 +11,16 @@ void Missile::Deserialize(const json11::Json& jsonObj)
 	m_lifeSpan = APP.m_maxFps * 10;
 
 	if (jsonObj.is_null()) { return; }
-	
+
 	GameObject::Deserialize(jsonObj);
 
 	if (jsonObj["Speed"].is_null() == false)
 	{
 		m_speed = jsonObj["Speed"].number_value();
 	}
+
+	//煙テクスチャ
+	m_trailSmoke.SetTexture(KdResFac.GetTexture("Data/Texture/smokeline2.png"));
 }
 
 void Missile::Update()
@@ -89,27 +92,30 @@ void Missile::Update()
 	m_prevPos = m_mWorld.GetTranslation();
 
 	UpdateCollision();
+
+	UpdateTrail();
 }
 
 #include"AirCraft.h"
 #include"EffectObject.h"
 void Missile::UpdateCollision()
 {
-		//一回の移動量と移動方向を計算
-	KdVec3 moveVec = m_mWorld.GetTranslation() - m_prevPos;//動く前→今の場所のベクトル
-	float moveDistance = moveVec.Length();//一回の移動量
+	KdVec3 moveVec = m_mWorld.GetTranslation() - m_prevPos;
 
-	//動いていないなら判定しない
+	float moveDistance = moveVec.Length();
+
 	if (moveDistance == 0.0f) { return; }
+
+
+	//球判定情報を作成
+	SphereInfo sInfo;
+	sInfo.m_pos = m_mWorld.GetTranslation();
+	sInfo.m_radius = m_colRadius;
 
 	//発射した主人のshared_ptr取得
 	auto spOwner = m_wpOwner.lock();
 
-	//球判定情報を作成
-	SphereInfo info;
-	info.m_pos = m_mWorld.GetTranslation();
-	info.m_radius = m_colRadius;
-	
+
 
 	for (auto& obj : Scene::Getinstance().GetObjects())
 	{
@@ -119,9 +125,10 @@ void Missile::UpdateCollision()
 		//発射した主人も無視
 		if (obj.get() == spOwner.get()) { continue; }
 
-		//TAG_Characterとは球判定を行う
 		if (!(obj->GetTag() & TAG_Character)) { continue; }
-		if (obj->HitCheckBySphere(info))
+
+		//TAG_Characterとは球判定を行う
+		if (obj->HitCheckBySphere(sInfo))
 		{
 			//std::dynamic_pointer_cast = 基底クラスをダウンキャストするときに使う。失敗するとnullptrが帰る
 			//重い、多発する場合は設計ミス
@@ -131,35 +138,92 @@ void Missile::UpdateCollision()
 			{
 				aircraft->OnNotify_Damage(m_attackPow);
 
-				//爆発エフェクト追加
-				auto effect = std::make_shared<EffectObject>();
-				effect->SetMatrix(m_mWorld);
-				Scene::Getinstance().AddObject(effect);
 			}
+			Explosion();
+
 			Destroy();
+
+			return;
 		}
+
 	}
 
 	//レイ情報の作成
-	RayInfo rayInfo;
-	rayInfo.m_pos = m_prevPos;			//ひとつ前の場所から
-	rayInfo.m_dir = moveVec;			//動いた方向に向かって
-	rayInfo.m_dir.Normalize();
-	rayInfo.m_maxRange = moveDistance;	//動いた分だけ判定
+	RayInfo rInfo;
+	rInfo.m_pos = m_prevPos;
+	rInfo.m_dir = moveVec;
+	rInfo.m_dir.Normalize();
+	rInfo.m_maxRange = moveDistance;
 
 	KdRayResult rayResult;
+
+	//TAG_StageObjectとはレイ判定を行う
 
 	for (auto& obj : Scene::Getinstance().GetObjects())
 	{
 		//自分自身は無視
 		if (obj.get() == this) { continue; }
 
-		//TAG_StageObjectとはレイ判定を行う
+		//発射した主人も無視
+		if (obj.get() == spOwner.get()) { continue; }
 
 		if (!(obj->GetTag() & TAG_StageObject)) { continue; }
-		if (obj->HitCheckByRay(rayInfo, rayResult))
+
+		//TAG_Characterとは球判定を行う
+		if (obj->HitCheckByRay(rInfo,rayResult))
 		{
+			Explosion();
+
 			Destroy();
+
+			return;
 		}
+
 	}
+}
+
+#include "AnimationEffect.h"
+void Missile::Explosion()
+{
+	//アニメーションエフェクトをインスタンス化
+	std::shared_ptr<AnimationEffect> effect = std::make_shared<AnimationEffect>();
+
+	//爆発のテクスチャとアニメーション情報を渡す
+	effect->SetAnimationInfo(
+		KdResFac.GetTexture("Data/Texture/Explosion00.png"), 10.0f, 5, 5, rand() % 360);
+
+	//場所をミサイル（自分）の位置に合わせる
+	effect->SetMatrix(m_mWorld);
+
+	//リストに追加
+	Scene::Getinstance().AddObject(effect);
+}
+
+void Missile::UpdateTrail()
+{
+	m_trailRotate += 1.0f;
+
+	KdMatrix mTrail;
+	mTrail.RotateZ(m_trailRotate);
+	mTrail *= m_mWorld;
+
+	//軌跡の座標を先頭に追加
+	m_trailSmoke.AddPoint(mTrail);
+
+	//軌跡の数制限(100以前の軌跡を消去する)
+	if (m_trailSmoke.GetNumPoints() > 100)
+	{
+		m_trailSmoke.DelPoint_Back();
+	}
+}
+
+void Missile::DrawEffect()
+{
+	if (!m_alive) { return; }
+
+	SHADER.m_effectShader.SetWorldMatrix(KdMatrix());
+
+	SHADER.m_effectShader.WriteToCB();
+
+	m_trailSmoke.DrawBillboard(0.5f);
 }

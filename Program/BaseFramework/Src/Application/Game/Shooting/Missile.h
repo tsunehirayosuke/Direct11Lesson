@@ -16,6 +16,12 @@ public:
 
 	//撃ったキャラクターを登録
 	inline void SetOwner(const std::shared_ptr<GameObject>& spOwner) { m_wpOwner = spOwner; }
+
+	void Explosion();
+
+	void UpdateTrail();
+	void DrawEffect() override;
+
 private:
 	KdVec3 m_prevPos;
 
@@ -26,4 +32,7 @@ private:
 	std::weak_ptr<GameObject> m_wpTarget;
 
 	int m_attackPow = 5;
+
+	KdTrailPolygon m_trailSmoke;
+	float m_trailRotate = 0.0f;
 };

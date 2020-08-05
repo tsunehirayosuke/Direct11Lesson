@@ -27,6 +27,9 @@ public:
 	virtual void Update();
 	virtual void Draw();
 
+	//半透明物の描画
+	virtual void DrawEffect(){}
+
 	inline const KdMatrix& GetMatrix() const { return m_mWorld; }
 	inline void SetMatrix(const KdMatrix& rMat) { m_mWorld = rMat; }
 	inline bool IsAlive() const { return m_alive; }
@@ -37,6 +40,8 @@ public:
 
 	//カメラコンポーネント取得
 	std::shared_ptr<CameraComponent> GetCameraComponent() { return m_spCameraComponent; }
+
+	std::shared_ptr<ModelComponent> GetModelComponent() { return m_spModelComponent; }
 
 	//球による当たり判定
 	bool HitCheckBySphere(const SphereInfo& rInfo);

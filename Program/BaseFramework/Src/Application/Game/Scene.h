@@ -60,5 +60,4 @@ private:
 	//デバッグライン描画用の頂点配列」
 	std::vector<KdEffectShader::Vertex> m_debugLines;
 
-	KdSquarePolygon m_poly;
 };
