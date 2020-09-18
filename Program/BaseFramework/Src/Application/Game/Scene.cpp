@@ -83,11 +83,7 @@ void Scene::Init()
 	m_pCamera = new EditorCamera();
 
 	m_spsky = KdResourceFactory::GetInstance().GetModel("Data/Sky/Sky.gltf");
-	Deserialize();
-}
-
-void Scene::Deserialize()
-{
+	
 	LoadScene("Data/Scene/ShootingGame.json");
 
 	std::shared_ptr<AnimationEffect> spExp = std::make_shared<AnimationEffect>();
@@ -108,8 +104,11 @@ void Scene::Update()
 	{
 		m_pCamera->Update();
 	}
+	auto selectObject = m_wpImguiSelectObj.lock();
+
 	for (auto pObject : m_spObjects)
 	{
+		if (pObject == selectObject) { continue; }
 		pObject->Update();
 	}
 	for (auto spObjectItr = m_spObjects.begin(); spObjectItr != m_spObjects.end();)
@@ -123,6 +122,11 @@ void Scene::Update()
 		{
 			++spObjectItr;
 		}
+	}
+
+	if (m_isRequestChangeScene)
+	{
+		ExecChangeScene();
 	}
 }
 
@@ -151,18 +155,20 @@ void Scene::Draw()
 	//ライト情報をセット
 	SHADER.m_cb8_Light.Write();
 
-	//エフェクトシェーダーを描画デバイスにセット
-	SHADER.m_effectShader.SetToDevice();
-
-	//
-	Math::Matrix skyScale = DirectX::XMMatrixScaling(100.0f, 100.0f, 100.0f);
-
-	SHADER.m_effectShader.SetWorldMatrix(skyScale);
-
-	//モデルの描画(メッシュ情報とマテリアル情報を渡す)
+	
 	if (m_spsky)
 	{
-		SHADER.m_effectShader.DrawMesh(m_spsky->GetMesh().get(), m_spsky->GetMaterials());
+		//エフェクトシェーダーを描画デバイスにセット
+		SHADER.m_effectShader.SetToDevice();
+
+		//
+		Math::Matrix skyScale = DirectX::XMMatrixScaling(100.0f, 100.0f, 100.0f);
+
+		SHADER.m_effectShader.SetWorldMatrix(skyScale);
+
+		//モデルの描画(メッシュ情報とマテリアル情報を渡す)
+
+		SHADER.m_effectShader.DrawMesh(m_spsky->GetMesh(0).get(), m_spsky->GetMaterials());
 	}
 
 	//不透明物描画
@@ -198,11 +204,7 @@ void Scene::Draw()
 	SHADER.m_effectShader.SetToDevice();
 	SHADER.m_effectShader.SetTexture(D3D.GetWhiteTex()->GetSRView());
 	{
-		AddDebugLine(Math::Vector3(), Math::Vector3(0.0f, 10.0f, 0.0f));
-
 		AddDebugSphereLine(Math::Vector3(5.0f, 5.0f, 0.0f), 2.0f);
-
-		AddDebugCoordinateAxisLine(Math::Vector3(0.0f, 5.0f, 5.0f), 3.0f);
 
 		//Zバッファ使用Off・書き込みOff
 		D3D.GetDevContext()->OMSetDepthStencilState(SHADER.m_ds_ZDisable_ZWriteDisable, 0);
@@ -218,6 +220,14 @@ void Scene::Draw()
 
 		m_debugLines.clear();
 	}
+}
+
+void Scene::Reset()
+{
+	m_spObjects.clear();//メインのリストをクリア
+	m_wpImguiSelectObj.reset();//ImGuiが選んでいるオブジェクトをクリア
+	m_wpTargetCamera.reset();//カメラのターゲット担っているキャラクタのリセット
+	m_spsky = nullptr;//空のクリア
 }
 
 void Scene::LoadScene(const std::string& sceneFilename)
@@ -261,28 +271,57 @@ void Scene::AddObject(std::shared_ptr<GameObject> spObject)
 
 void Scene::ImGuiUpdate()
 {
+	auto selectObject = m_wpImguiSelectObj.lock();
+
+
 	if (ImGui::Begin("Scene"))
 	{
 		ImGui::Checkbox("EditorCamera", &m_editorCameraEnable);
 
+		if (ImGui::CollapsingHeader("Object List", ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			for (auto&& rObj : m_spObjects)
+			{
+				bool selected = (rObj == selectObject);
+
+				ImGui::PushID(rObj.get());
+
+				if (ImGui::Selectable(rObj->GetName(), selected))
+				{
+					m_wpImguiSelectObj = rObj;
+				}
+
+				ImGui::PopID();
+			}
+		}
+	}
+	ImGui::End();
+
+	//インスペクターウィンド
+	if (ImGui::Begin("Inspector"))
+	{
+		
+		if (selectObject)
+		{
+			selectObject->ImGuiUpdate();
+		}
 	}
 	ImGui::End();
 }
 
-//デバッグライン描画
-void Scene::AddDebugLine(const Math::Vector3& p1, const Math::Vector3& p2, const Math::Color& color)
+void Scene::ImGuiPrefabFactoryUpdate()
 {
-	//ラインの開始地点
-	KdEffectShader::Vertex ver;
-	ver.Color = color;
-	ver.UV = { 0.0f,0.0f };
-	ver.Pos = p1;
-	m_debugLines.push_back(ver);
+	if (ImGui::Begin("PrefabFactory"))
+	{
+		ImGui::InputText("JsonName", &str);
 
-	//ラインの終了地点
-	ver.Pos = p2;
-	m_debugLines.push_back(ver);
+		if (ImGui::Button("Create"))
+		{
+			
+		}
 
+	}
+	ImGui::End();
 }
 
 void Scene::AddDebugSphereLine(const Math::Vector3& pos, float radius, const Math::Color& color)
@@ -292,70 +331,19 @@ void Scene::AddDebugSphereLine(const Math::Vector3& pos, float radius, const Mat
 	ver.UV = { 0.0f,0.0f };
 
 	static constexpr int kDetail = 16;
-	for (UINT i = 0; i < kDetail + 1; i++)
-	{
-		//XZ平面
-		ver.Pos = pos;
-		ver.Pos.x += cos((float)i * (360 / kDetail) * KdToRadians) * radius;
-		ver.Pos.z += sin((float)i * (360 / kDetail) * KdToRadians) * radius;
-		m_debugLines.push_back(ver);
-
-		ver.Pos = pos;
-		ver.Pos.x += cos((float)(i + 1) * (360 / kDetail) * KdToRadians) * radius;
-		ver.Pos.z += sin((float)(i + 1) * (360 / kDetail) * KdToRadians) * radius;
-		m_debugLines.push_back(ver);
-
-		//XY平面
-		ver.Pos = pos;
-		ver.Pos.x += cos((float)i * (360 / kDetail) * KdToRadians) * radius;
-		ver.Pos.y += sin((float)i * (360 / kDetail) * KdToRadians) * radius;
-		m_debugLines.push_back(ver);
-
-		ver.Pos = pos;
-		ver.Pos.x += cos((float)(i + 1) * (360 / kDetail) * KdToRadians) * radius;
-		ver.Pos.y += sin((float)(i + 1) * (360 / kDetail) * KdToRadians) * radius;
-		m_debugLines.push_back(ver);
-
-		//YZ平面
-		ver.Pos = pos;
-		ver.Pos.y += cos((float)i * (360 / kDetail) * KdToRadians) * radius;
-		ver.Pos.z += sin((float)i * (360 / kDetail) * KdToRadians) * radius;
-		m_debugLines.push_back(ver);
-
-		ver.Pos = pos;
-		ver.Pos.y += cos((float)(i + 1) * (360 / kDetail) * KdToRadians) * radius;
-		ver.Pos.z += sin((float)(i + 1) * (360 / kDetail) * KdToRadians) * radius;
-		m_debugLines.push_back(ver);
-	}
+	
 }
 
-void Scene::AddDebugCoordinateAxisLine(const Math::Vector3& pos, float scale)
+void Scene::RequestChangeScene(const std::string& filename)
 {
-	KdEffectShader::Vertex ver;
-	ver.Color = { 1,1,1,1, };
-	ver.UV = { 0.0f,0.0f };
+	m_nextSceneFileName = filename;
 
-	//X軸
-	ver.Pos = pos;
-	ver.Color = { 1,0,0,1, };
-	m_debugLines.push_back(ver);
+	m_isRequestChangeScene = true;
+}
 
-	ver.Pos.x += 1.0f * scale;
-	m_debugLines.push_back(ver);
+void Scene::ExecChangeScene()
+{
+	LoadScene(m_nextSceneFileName);
 
-	//Y軸
-	ver.Pos = pos;
-	ver.Color = { 0,1,0,1, };
-	m_debugLines.push_back(ver);
-
-	ver.Pos.y += 1.0f * scale;
-	m_debugLines.push_back(ver);
-
-	//Z軸
-	ver.Pos = pos;
-	ver.Color = { 0,0,1,1, };
-	m_debugLines.push_back(ver);
-
-	ver.Pos.z += 1.0f * scale;
-	m_debugLines.push_back(ver);
+	m_isRequestChangeScene = false;
 }

@@ -18,13 +18,14 @@ public:
 	
 	~Scene();		//デストラクタ
 
+	void RequestChangeScene(const std::string& filename);//シーン変更の受付
+
 	void Init();	//初期化
-	void Deserialize();
+	
 	void Release();	//解放
 	void Update();	//更新
 	void Draw();	//描画
 
-	void LoadScene(const std::string& sceneFilename);
 
 	//GameObjectのリストを返す
 	const std::list<std::shared_ptr<GameObject>>GetObjects()const { return m_spObjects; }
@@ -35,24 +36,32 @@ public:
 
 	void ImGuiUpdate();//ImGuiの更新
 
-	//デバッグライン描画
-	void AddDebugLine(const Math::Vector3& p1, const Math::Vector3& p2, const Math::Color& color = { 1,1,1,1 });
+	void ImGuiPrefabFactoryUpdate();
 
 	//デバッグスフィア描画
 	void AddDebugSphereLine(const Math::Vector3& pos, float radius, const Math::Color& color = { 1,1,1,1 });
-
-	//デバッグ座標軸描画
-	void AddDebugCoordinateAxisLine(const Math::Vector3& pos, float scale = 1.0f);
-
 private:
 
 	Scene();        //コンストラクタ
+
+	void LoadScene(const std::string& sceneFilename);
+
+	std::string m_nextSceneFileName = "";//次のシーンのJsonファイル名
+	bool m_isRequestChangeScene = false; //シーン遷移のリクエストの有無
+
+	void ExecChangeScene(); //シーンを実際に変更
+	void Reset(); //シーンをまたぐときにリセットする
 
 	std::shared_ptr<kdModel> m_spsky = nullptr;	//スカイスフィア
 	EditorCamera*	m_pCamera;
 	bool			m_editorCameraEnable = true;
 
 	std::list<std::shared_ptr<GameObject>> m_spObjects;
+
+	std::string str = "";
+
+	//ImGuiで選択されたオブジェクト
+	std::weak_ptr<GameObject>	m_wpImguiSelectObj;
 
 	//ターゲットのカメラ
 	std::weak_ptr<CameraComponent>m_wpTargetCamera;

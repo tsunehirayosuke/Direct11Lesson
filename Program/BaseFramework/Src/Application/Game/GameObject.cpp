@@ -76,6 +76,54 @@ void GameObject::Draw()
 	m_spModelComponent->Draw();
 }
 
+void GameObject::ImGuiUpdate()
+{
+	ImGui::InputText("Name", &m_name);
+
+	if (ImGui::TreeNodeEx("Tag", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		ImGui::CheckboxFlags("Character", &m_tag, TAG_Character);
+		ImGui::CheckboxFlags("Player", &m_tag, TAG_Player);
+		ImGui::CheckboxFlags("StageObject", &m_tag, TAG_StageObject);
+		ImGui::CheckboxFlags("AttackHit", &m_tag, TAG_AttackHit);
+
+		ImGui::TreePop();
+	}
+
+	if (ImGui::TreeNodeEx("Transform", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		KdVec3 pos = m_mWorld.GetTranslation();
+		KdVec3 rot = m_mWorld.GetAngles();
+
+		bool isChange = false;
+
+		isChange |= ImGui::DragFloat3("Position", &pos.x, 0.01f);
+		isChange |= ImGui::DragFloat3("Rotation", &rot.x, 0.1f);
+
+		if (isChange)
+		{
+			rot *= KdToRadians;
+
+			KdMatrix mR;
+			mR.RotateX(rot.x);
+			mR.RotateY(rot.y);
+			mR.RotateZ(rot.z);
+
+			m_mWorld = mR;
+
+			m_mWorld.SetTranslation(pos);
+		}
+		if (ImGui::Button(u8"JSONテキストコピー"))
+		{
+			std::string s = KdFormat("\"Pos\":[%.1f,%.1f,%.1f],\n", pos.x, pos.y, pos.z);
+			s += KdFormat("\"Pos\":[%.1f,%.1f,%.1f],\n", rot.x, rot.y, rot.z);
+			ImGui::SetClipboardText(s.c_str());
+		}
+
+		ImGui::TreePop();
+	}
+}
+
 void GameObject::Release() 
 {
 
@@ -110,16 +158,33 @@ bool GameObject::HitCheckBySphere(const SphereInfo& rInfo)
 bool GameObject::HitCheckByRay(const RayInfo& rInfo, KdRayResult& rResult)
 {
 	//判定をする対象のモデルがない場合は当っていない
-	if (!m_spModelComponent) { return false; }
+	for (auto& node : m_spModelComponent->GetNodes())
+	{
+		KdRayResult tmpResult;
 
-	if (m_spModelComponent->GetMesh() == nullptr) { return false; }
+		KdRayToMesh(rInfo.m_pos, rInfo.m_dir, rInfo.m_maxRange, *(node.m_spMesh),
+			node.m_localTransform * m_mWorld, tmpResult);
+		if (tmpResult.m_distance < rResult.m_distance)
+		{
+			rResult = tmpResult;
+		}
+	}
 
-	return KdRayToMesh(rInfo.m_pos, rInfo.m_dir, rInfo.m_maxRange, 
-		*(m_spModelComponent->GetMesh()), m_mWorld, rResult);
+	return rResult.m_hit;
 }
+
+#include "Shooting/ShootingGameProcess.h"
+#include "Action/ActionGameProcess.h"
+
+#include "Action/Human.h"
 
 std::shared_ptr<GameObject> CreateGameObject(const std::string& name)
 {
+	if (name == "Human")
+	{
+		return std::make_shared<Human>();
+	}
+
 	if (name == "GameObject")
 	{
 		return std::make_shared<GameObject>();
@@ -127,6 +192,16 @@ std::shared_ptr<GameObject> CreateGameObject(const std::string& name)
 	else if (name == "Aircraft")
 	{
 		return std::make_shared<AirCraft>();
+	}
+
+	if (name == "ShootingGameProcess")
+	{
+		return std::make_shared<ShootingGameProcess>();
+	}
+
+	if (name == "ActionGameProcess")
+	{
+		return std::make_shared<ActionGameProcess>();
 	}
 
 	//文字列が既存のクラスに一致しない

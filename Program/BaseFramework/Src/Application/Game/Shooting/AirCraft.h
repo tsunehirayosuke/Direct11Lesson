@@ -11,11 +11,12 @@ public:
 	void Deserialize(const json11::Json& jsonObj)override; //初期化:オブジェクト作成用外部データの解釈
 	void Update();		//更新
 
-	void ImGuiUpdate(); //AirCraftクラス専用のImGui更新
 
 	void Draw() override;//描画
 
 	void OnNotify_Damage(int damage);
+
+	void DrawEffect() override;
 
 private:
 
@@ -23,10 +24,6 @@ private:
 	void UpdateShoot(); //発射関数
 	void UpdateCollision(); //当たり判定処理
 	void UpdatePropeller();//プロペラ更新
-
-	std::shared_ptr<GameObject> m_spPropeller;//プロペラ
-
-	KdMatrix m_mPropLocal;//プロペラと飛行機の距離
 
 	float m_propRotSpeed = 0.0f;//プロペラの回転速度
 
@@ -40,6 +37,9 @@ private:
 
 	int m_hp = 10;//０になるとリストから抜く
 	int m_attackPow = 1;
+
+	KdTrailPolygon m_propTrail;
+
 
 	//基底アクションステート
 	class BaseAction

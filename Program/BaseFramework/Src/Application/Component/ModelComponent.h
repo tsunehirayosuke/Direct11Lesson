@@ -1,40 +1,57 @@
 ﻿#pragma once
 
-#include"../Game/GameObject.h"
+class GameObject;
 
 //モデルコンポーネント
 
 class ModelComponent
 {
 public:
-	ModelComponent(GameObject& owner) :m_owner(owner){}
+	ModelComponent(GameObject& rOwner) : m_rOwner(rOwner){}
 
 	//有効フラグ
 	bool IsEnable()const { return m_enable; }
 	void SetEnable(bool enable) { m_enable = enable; }
 
 	//モデル取得
-	inline const std::shared_ptr<kdModel> GetModel()const { return m_spModel; }
+	const std::vector<kdModel::Node>& GetNodes() const { return m_coppieNodes; }
 
 	//メッシュ取得
-	inline const std::shared_ptr<KdMesh>GetMesh()const
+	inline const std::shared_ptr<KdMesh>GetMesh(UINT index)const
 	{
-		if (m_spModel == nullptr) { return nullptr; }
-		return m_spModel->GetMesh();
+		if (index >= m_coppieNodes.size()) { return nullptr; }
+		return m_coppieNodes[index].m_spMesh;
+	}
+
+	inline kdModel::Node* FindNode(const std::string& name)
+	{
+		for (auto&& node : m_coppieNodes)
+		{
+			if (node.m_name == name)
+			{
+				return &node;
+			}
+		}
+		return nullptr;
 	}
 
 	//モデルセット
-	inline void SetModel(const std::shared_ptr<kdModel>& model) { m_spModel = model; }
+	void SetModel(const std::shared_ptr<kdModel>& rModel);
+
+	void LoadModel(const std::string& filename);
 
 	//StandardShaderで描画
 	void Draw();
 
 private:
+
+	std::vector<kdModel::Node> m_coppieNodes;
+
 	//有効
 	bool m_enable = true;
 
 	//モデルデータの参照
 	std::shared_ptr<kdModel> m_spModel;
 
-	GameObject& m_owner;
+	GameObject& m_rOwner;
 };

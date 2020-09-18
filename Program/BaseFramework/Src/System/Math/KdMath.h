@@ -173,6 +173,12 @@ public:
 		*this *= DirectX::XMMatrixRotationY(angle);
 	}
 
+	//X軸回転
+	void RotateX(float angle)
+	{
+		*this *= DirectX::XMMatrixRotationX(angle);
+	}
+
 	//拡縮
 	void Scale(float x, float y, float z)
 	{
@@ -200,6 +206,22 @@ public:
 	//Z軸取得
 	KdVec3 GetAxisZ() const { return { _31,_32,_33 }; }
 	
+	//X軸セット
+	void SetAxisX(const KdVec3& v)
+	{
+		_11 = v.x;
+		_12 = v.y;
+		_13 = v.z;
+	}
+
+	//Y軸セット
+	void SetAxisY(const KdVec3& v)
+	{
+		_21 = v.x;
+		_22 = v.y;
+		_23 = v.z;
+	}
+
 	//Z軸セット
 	void SetAxisZ(const KdVec3& v)
 	{
@@ -218,6 +240,33 @@ public:
 		_43 = v.z;
 	}
 
+	//XYZの順番で合成したときの、回転角度を算出する
+	KdVec3 GetAngles() const
+	{
+		KdMatrix mat = *this;
+
+		//各軸を取得
+		KdVec3 axisX = mat.GetAxisX();
+		KdVec3 axisY = mat.GetAxisY();
+		KdVec3 axisZ = mat.GetAxisZ();
+		
+		//各軸を正規化
+		axisX.Normalize();
+		axisY.Normalize();
+		axisZ.Normalize();
+
+		//マトリックスを正規化
+		mat.SetAxisX(axisX);
+		mat.SetAxisY(axisY);
+		mat.SetAxisZ(axisZ);
+
+		KdVec3 angles;
+		angles.x = atan2f(mat.m[1][2], mat.m[2][2]);
+		angles.y = atan2f(-mat.m[0][2], sqrtf(mat.m[1][2] * mat.m[1][2] + mat.m[2][2] * mat.m[2][2]));
+		angles.z = atan2f(mat.m[0][1], mat.m[0][0]);
+
+		return angles;
+	}
 };
 
 inline KdMatrix operator*(const KdMatrix& M1, const KdMatrix& M2)

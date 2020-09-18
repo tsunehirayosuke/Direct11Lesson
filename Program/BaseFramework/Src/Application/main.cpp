@@ -192,6 +192,7 @@ void Application::Execute()
 		//ImGui::ShowDemoWindow(nullptr);
 
 		Scene::Getinstance().ImGuiUpdate();
+		Scene::Getinstance().ImGuiPrefabFactoryUpdate();
 
 		//バックバッファクリア
 		D3D.GetDevContext()->ClearRenderTargetView(D3D.GetBackBuffer()->GetRTView(),

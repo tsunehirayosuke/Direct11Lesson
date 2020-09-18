@@ -38,7 +38,11 @@ public:
 	//　・width ポリゴンの幅
 	void Draw(float width);
 
+	//ビルボード描画
 	void DrawBillboard(float width);
+
+	//頂点情報をそのまま繋げてポリゴンを描画
+	void DrawStrip();
 private:
 
 

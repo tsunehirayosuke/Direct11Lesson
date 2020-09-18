@@ -97,6 +97,9 @@ public:
 	ID3D11RasterizerState* m_rs_CullBack = nullptr;
 	ID3D11RasterizerState* m_rs_CullNone = nullptr;
 
+	ID3D11BlendState* m_bs_Alpha = nullptr;
+	ID3D11BlendState* m_bs_Add = nullptr;
+
 
 	//==========================
 	//

@@ -22,28 +22,31 @@ void AirCraft::Deserialize(const json11::Json& jsonObj)
 
 		//プレイヤー入力
 		m_spInputComponent = std::make_shared<PlayerInputComponent>(*this);
+
+		kdModel::Node* propNode = m_spModelComponent->FindNode("propeller");//文字列をもとにプロペラノードの検索
+		if (propNode)
+		{
+			propNode->m_localTransform.CreateTranslation(0.0f, 0.0f, 2.8f);//プレイヤーのプロペラだけ前に進める
+		}
+		m_propRotSpeed = 0.3;//プロペラの回転速度
+
 	}
 	else
 	{
 		//敵飛行機入力
 		m_spInputComponent = std::make_shared<EnemyInputComponent>(*this);
+
+		kdModel::Node* propNode = m_spModelComponent->FindNode("propeller");//文字列をもとにプロペラノードの検索
+		if (propNode)
+		{
+			propNode->m_localTransform.CreateTranslation(0.0f, 0.0f, 2.8f);//プレイヤーのプロペラだけ前に進める
+		}
+		m_propRotSpeed = 0.3;//プロペラの回転速度
 	}
 
 	m_spActionState = std::make_shared<ActionFly>();
 
-	//インスタンス化
-	m_spPropeller = std::make_shared<GameObject>();
-	if (m_spPropeller && m_spPropeller->GetModelComponent())
-	{
-		//プロペラのモデルを読み込む
-		m_spPropeller->GetModelComponent()->SetModel(KdResFac.GetModel("Data/Aircraft/Propeller.gltf"));
-		
-		//本体からのずれの修正
-		m_mPropLocal.CreateTranslation(0.0f, 0.0f, 2.85f);
-
-		//プロペラのスピード
-		m_propRotSpeed = 0.3f;
-	}
+	m_propTrail.SetTexture(KdResFac.GetTexture("Data/Texture/sabelline.png"));
 }
 
 void AirCraft::Update()
@@ -66,28 +69,6 @@ void AirCraft::Update()
 	}
 
 	UpdatePropeller();
-}
-
-
-void AirCraft::ImGuiUpdate()
-{
-	if (ImGui::TreeNodeEx("AirCraft", ImGuiTreeNodeFlags_DefaultOpen))
-	{
-		KdVec3 pos;
-		pos = m_mWorld.GetTranslation();
-
-		//ImGui::Text("Position[x:%.2f] [y:%.2f] [z:%.2f]", pos.x, pos.y, pos.z);
-
-		if (ImGui::DragFloat3("Position", &pos.x, 0.01f))
-		{
-			KdMatrix mTrans;
-			mTrans.CreateTranslation(pos.x, pos.y, pos.z);
-
-			m_mWorld = mTrans;
-		}
-
-		ImGui::TreePop();
-	}
 }
 
 
@@ -304,22 +285,42 @@ void AirCraft::UpdateCollision()
 }
 void AirCraft::UpdatePropeller()
 {
-	if (!m_spPropeller) { return; }
+	kdModel::Node* propNode = m_spModelComponent->FindNode("propeller");
+	if (propNode)
+	{
+		//回転量分プロペラのローカル行列を回転
+		propNode->m_localTransform.RotateZ(m_propRotSpeed);
 
-	//ずれ分＊本体の位置
-	m_spPropeller->SetMatrix(m_mPropLocal * m_mWorld);
+		//プロペラの中心座標(World)
+		KdMatrix propCenterMat;
+		propCenterMat *= propNode->m_localTransform * m_mWorld;
 
-	//プロペラ回転実行
-	m_mPropLocal.RotateZ(m_propRotSpeed);
+		//プロペラの外周座標(World)
+		KdMatrix propOuterMat;
+
+		//そこからY軸へ少しずらした位置
+		propOuterMat.CreateTranslation(0.0f, 1.8f, 0.0f);
+		propOuterMat *= propCenterMat;
+
+		//Strip描画をするため2つで1ペア追加
+		m_propTrail.AddPoint(propCenterMat);
+		m_propTrail.AddPoint(propOuterMat);
+
+		//30個より多く登録されてたら
+		if (m_propTrail.GetNumPoints() > 30)
+		{
+			//Strip描画するために２つで1ペア消す
+			m_propTrail.DelPoint_Back();
+			m_propTrail.DelPoint_Back();
+		}
+	}
 }
+
+
 void AirCraft::Draw()
 {
 	GameObject::Draw();//基底クラスのDrawを呼び出す
 
-	if (m_spPropeller)
-	{
-		m_spPropeller->Draw();
-	}
 
 	//レーザー描画
 	if (m_laser)
@@ -334,8 +335,6 @@ void AirCraft::Draw()
 		laserDir *= m_laserRange;//レーザーの射程分方向ベクトルを伸ばす
 
 		laserEnd = laserStart + laserDir;//レーザーの終点は発射位置ベクトル+レーザーの長さ分
-
-		Scene::Getinstance().AddDebugLine(m_prevPos, laserEnd, { 0.0f,1.0f,1.0f,1.0f });
 	}
 }
 void AirCraft::OnNotify_Damage(int damage)
@@ -346,6 +345,18 @@ void AirCraft::OnNotify_Damage(int damage)
 	{
 		m_spActionState = std::make_shared<ActionCrash>();
 	}
+}
+
+void AirCraft::DrawEffect()
+{
+	D3D.GetDevContext()->OMSetBlendState(SHADER.m_bs_Add, Math::Color(0, 0, 0, 0), 0xFFFFFFFF);
+
+	SHADER.m_effectShader.SetWorldMatrix(KdMatrix());
+	SHADER.m_effectShader.WriteToCB();
+
+	m_propTrail.DrawStrip();
+
+	D3D.GetDevContext()->OMSetBlendState(SHADER.m_bs_Alpha, Math::Color(0, 0, 0, 0), 0xFFFFFFFF);
 }
 
 void AirCraft::ActionFly::Update(AirCraft& owner)

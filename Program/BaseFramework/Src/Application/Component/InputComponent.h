@@ -93,3 +93,14 @@ public:
 	virtual void Update() override;
 
 };
+
+//地面を動き回る用のInputComponent
+class ActionPlayerInputComponent : public InputComponent
+{
+public:
+	ActionPlayerInputComponent(GameObject& rOwner) : InputComponent(rOwner){}
+
+	virtual void Update()override;
+
+	POINT m_prevMousePos;
+};
